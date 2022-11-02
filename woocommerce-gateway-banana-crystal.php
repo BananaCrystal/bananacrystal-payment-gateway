@@ -17,7 +17,7 @@
  * Plugin URI:        https://www.bananacrystal.com/
  * Description:       Fast secure, low-cost, borderless, local and international payments in USD powered by blockchain/crypto payment rails. Send and receive secure peer to peer payments to anyone instantly at no cost to you.
  * Version:           1.0.0
- * Author:            Esther Villars
+ * Author:            Banana Crystal
  * Author URI:        https://www.bananacrystal.com/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt

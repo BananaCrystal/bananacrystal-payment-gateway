@@ -2,3 +2,9 @@
  * All of the CSS for your public-facing functionality should be
  * included in this file.
  */
+
+.banana-crystal-logo {
+    width: 170px;
+	position: absolute;
+	margin-top: -10px;
+}
