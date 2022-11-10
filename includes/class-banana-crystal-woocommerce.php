@@ -54,17 +54,22 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	public function process_ipn_response() {
 		global $woocommerce;
 		$data = file_get_contents("php://input", false, stream_context_get_default(), 0, $_SERVER["CONTENT_LENGTH"]);
+	    $data = json_decode( $data);
+		
 		// LOAD THE WC LOGGER
 		$logger = wc_get_logger();
     
 		// LOG THE IPN ORDER TO CUSTOM "banana-crystal" LOG
-		$logger->info( wc_print_r( $data, true ), array( 'source' => 'banana-crystal' ) );
+		//$logger->info( wc_print_r( $data, true ), array( 'source' => 'banana-crystal' ) );
 		
 		$response = ['success' => false];
 		if ($data->payment_status == 'completed') {
-		    //check if request is from Banana Crystal
-		   $verifyResponse = $this->verifyPayload($data);
-		    
+		   //check if request is from Banana Crystal
+		  $data->cmd = "notify-validate";
+
+		  $verifyResponse = $this->verifyPayload($data);
+		  $logger->info( wc_print_r(    $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
+		 
 		  $order = new WC_Order( $data->order_id );
 		  $order->payment_complete();
 		  $response['success'] = true;
@@ -79,7 +84,6 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 
 	//Modify page gateway title on checkout
 	public function change_payment_gateway_title( $title, $gateway_id ){
-    
 		if( 'wo_banana_crystal' === $gateway_id ) {
 			$title = '<img title="BananaCrystal Payment Gateway" src="'.plugin_dir_url(__DIR__ ).'public/img/bananacrystal-logo.png"  class="banana-crystal-logo"/>';
 		}
@@ -89,7 +93,23 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 
 	// administration fields for specific Gateway
 	public function init_form_fields() {
+	    
+	    $order_param = WC_Admin_Settings::get_option('woocommerce_checkout_order_received_endpoint', 'order-received' );
+	    $thankyou_page_url = wc_get_checkout_url() . $order_param . '/{order_id}';
+	    $setting_page_url = 'https://app.bananacrystal.com/stores/';
+	    $ipn_notification_url = site_url().'/?wc-api=wo_banana_crystal';
+	  
 		$this->form_fields = array(
+		    'help_text' => array(
+                'title' => __('Set your Thank you page Redirect URL <code>'.$thankyou_page_url.'</code> in your BananaCrystal account <a href="'.$setting_page_url.'" target="_blank">settings</a> integrations page.', 'wo-banana-crystal' ),
+                'type' => 'title',
+                'id'   => 'wo-banana-crystal_help_text'
+            ),
+             'help_text_ipn' => array(
+                'title' => __('Set your Payment Notifications URL redirect uri <code>'.$ipn_notification_url.'</code> in your BananaCrystal account <a href="'.$setting_page_url.'" target="_blank">settings</a> integrations page.', 'wo-banana-crystal' ),
+                'type' => 'title',
+                'id'   => 'wo-banana-crystal_help_ipn'
+            ),
 			'enabled' => array(
 				'title'		=> __( 'Enable / Disable', 'wo-banana-crystal' ),
 				'label'		=> __( 'Enable this payment gateway', 'wo-banana-crystal' ),
@@ -113,15 +133,10 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'title'		=> __( 'BananaCrystal Store Username', 'wo-banana-crystal' ),
 				'type'		=> 'text',
 				'desc_tip'	=> __( 'This is the store username provided by BananaCrystal when you signed up for an account.', 'wo-banana-crystal' ),
-			),
-			'help_text' => array(
-                'title' => __( 'Please use this link to update in your banana crystal thank you link: <a href="'.site_url().'/?page_id=11">'.site_url().'/?page_id=11</a>', 'wo-banana-crystal' ),
-                'type' => 'title',
-                'desc' => __( 'Please use this link to update in your banana crystal thank you link: <a href="'.site_url().'/?page_id=11">'.site_url().'/?page_id=11</a>', 'wo-banana-crystal' ),
-                'id'   => 'wo-banana-crystal_help_text',
-                'css'       => 'min-width:300px;'
-            )
+			)
 		);		
+		
+		
 	}
 	
 	// Response handled for payment gateway
@@ -135,8 +150,21 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         // Remove cart
         $woocommerce->cart->empty_cart();
 
+        //get only key from prefix
+        $order_key = str_replace('wc_order_', '', $order->order_key);
+        
+        //append items in notes
+        $notes = '';
+        // Get and Loop Over Order Items
+        foreach ( $order->get_items() as $item_id => $item ) {
+           $product_name = $item->get_name();
+           $quantity = $item->get_quantity();
+           $notes .= $product_name.' x '.$quantity.'\n';
+        }
+                
+        
         //redirect urser to store banana crystal payment page
-        $params = '?amount='.$order->order_total.'&note=Payment through woocommerce store&ref='.$order_id;
+        $params = '?amount='.$order->order_total.'&note='.$notes.'&ref='.$order_id.'&sd='. base64_encode($order_key);
         $store_user_name = $this->get_option( 'store_username' );
         $redirect_url = 'https://app.bananacrystal.com/payme/'.$store_user_name.$params;
     
@@ -147,11 +175,20 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         );
 	}
 	
-	// Validate fields
+	/**
+	 * Valudate fields
+	 * 
+	 * @return (bool)
+	 **/
 	public function validate_fields() {
 		return true;
 	}
 
+    /**
+     * Show ssl warning if not enabled
+     * 
+     * @return (void)
+     **/
 	public function do_ssl_check() {
 		if( $this->enabled == "yes" ) {
 			if( get_option( 'woocommerce_force_ssl_checkout' ) == "no" ) {
@@ -159,19 +196,36 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			}
 		}		
 	}
-
+    
+    /**
+     * Check IPN payload is coming from the banana crystal
+     * 
+     * @params (array)$data
+     * @return (mixed)
+     **/
 	private function verifyPayload($data) {
         $endpoint = 'https://app.bananacrystal.com/store_integrations/wordpress/notifications/verify';
         $postdata = json_encode($data);
-    
-        $ch = curl_init($endpoint); 
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+          CURLOPT_URL =>  $endpoint,
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_ENCODING => '',
+          CURLOPT_MAXREDIRS => 10,
+          CURLOPT_TIMEOUT => 0,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+          CURLOPT_CUSTOMREQUEST => 'POST',
+          CURLOPT_POSTFIELDS =>$postdata,
+          CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json'
+          ),
+        ));
+        
+        $response = curl_exec($curl);
+        curl_close($curl);
+        return $response;
 	}
 
 }
