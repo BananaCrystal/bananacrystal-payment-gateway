@@ -76,7 +76,6 @@ class Woocommerce_Gateway_Banana_Crystal {
 
 		$this->load_dependencies();
 		$this->set_locale();
-		$this->define_admin_hooks();
 		$this->define_public_hooks();
 
 	}
@@ -112,11 +111,6 @@ class Woocommerce_Gateway_Banana_Crystal {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-woocommerce-gateway-banana-crystal-i18n.php';
 
 		/**
-		 * The class responsible for defining all actions that occur in the admin area.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-woocommerce-gateway-banana-crystal-admin.php';
-
-		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
 		 */
@@ -143,21 +137,6 @@ class Woocommerce_Gateway_Banana_Crystal {
 
 	}
 
-	/**
-	 * Register all of the hooks related to the admin area functionality
-	 * of the plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function define_admin_hooks() {
-
-		$plugin_admin = new Woocommerce_Gateway_Banana_Crystal_Admin( $this->get_plugin_name(), $this->get_version() );
-
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-
-	}
 
 	/**
 	 * Register all of the hooks related to the public-facing functionality
