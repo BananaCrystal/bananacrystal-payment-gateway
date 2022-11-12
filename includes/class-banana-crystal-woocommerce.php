@@ -84,13 +84,14 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 
 	//Modify page gateway title on checkout
 	public function change_payment_gateway_title( $title, $gateway_id ){
-		if( 'wo_banana_crystal' === $gateway_id ) {
-			$title = '<img title="BananaCrystal Payment Gateway" src="'.plugin_dir_url(__DIR__ ).'public/img/bananacrystal-logo.png"  class="banana-crystal-logo"/>';
+		if( 'wo_banana_crystal' === $gateway_id && isset($_GET['wc-ajax'])) {
+			$title = $_GET['wc-ajax'] == 'update_order_review' ? '<img title="BananaCrystal Payment Gateway" src="'.plugin_dir_url(__DIR__ ).'public/img/bananacrystal-logo.png"  class="banana-crystal-logo"/>' : $title;
 		}
 	
 		return $title;
 	}
 
+	
 	// administration fields for specific Gateway
 	public function init_form_fields() {
 	    
