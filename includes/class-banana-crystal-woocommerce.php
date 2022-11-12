@@ -91,12 +91,12 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		return $title;
 	}
 
-	
+
 	// administration fields for specific Gateway
 	public function init_form_fields() {
 	    
 	    $order_param = WC_Admin_Settings::get_option('woocommerce_checkout_order_received_endpoint', 'order-received' );
-	    $thankyou_page_url = wc_get_checkout_url() . $order_param . '/{order_id}';
+	    $thankyou_page_url = wc_get_checkout_url() . $order_param . '/order_id';
 	    $setting_page_url = 'https://app.bananacrystal.com/stores/';
 	    $ipn_notification_url = site_url().'/?wc-api=wo_banana_crystal';
 	  
