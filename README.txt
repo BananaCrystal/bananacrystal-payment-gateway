@@ -24,7 +24,7 @@ Benefits for your store or business:
 Benefits for your customers:
 
 Fast secure, low-cost, borderless, local and international payments in USD powered by blockchain/crypto payment rails.
-Customer send and receive secure peer to peer payments to anyone instantly at no cost to you.
+Customers send and receive secure payments (peer to peer) to your store instantly at no cost to you.
 You and your customers get privacy on all your purchases. Your bank or credit card company does not need to know what you are purchasing…because your purchases are private.
 
 #### FEATURES ####
@@ -38,7 +38,7 @@ You and your customers get privacy on all your purchases. Your bank or credit ca
 
 = How do I start accepting payments using BananaCrystal?
 
-To learn more go to https://www.bananacrystal.com/business/ 
+To learn more, go to https://www.bananacrystal.com/business/ 
 
 = Where do I get my store username? =
 
@@ -47,6 +47,7 @@ Login to your BananaCrystal account and go to Store > Settings.
 = Where do I configure my redirect url or payment notification webhook?
 
 Login to your BananaCrystal account and go to Store > Integrations.
+
 Then, add or update an existing Woocommerce Integration
 
 = Where can I get support or talk to other users? =
