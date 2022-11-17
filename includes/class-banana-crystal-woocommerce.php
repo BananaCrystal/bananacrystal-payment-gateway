@@ -85,7 +85,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	//Modify page gateway title on checkout
 	public function change_payment_gateway_title( $title, $gateway_id ){
 		if( 'wo_banana_crystal' === $gateway_id && isset($_GET['wc-ajax'])) {
-			$title = $_GET['wc-ajax'] == 'update_order_review' ? '<img title="BananaCrystal Payment Gateway" src="'.plugin_dir_url(__DIR__ ).'public/img/bananacrystal-logo.png"  class="banana-crystal-logo"/>' : $title;
+			$title = $_GET['wc-ajax'] == 'update_order_review' ? $title.' <img title="BananaCrystal Payment Gateway" src="'.plugin_dir_url(__DIR__ ).'public/img/bananacrystal-logo.png"  class="banana-crystal-logo"/>' : $title;
 		}
 	
 		return $title;
@@ -98,19 +98,22 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	    $order_param = WC_Admin_Settings::get_option('woocommerce_checkout_order_received_endpoint', 'order-received' );
 	    $thankyou_page_url = wc_get_checkout_url() . $order_param . '/order_id';
 	    $setting_page_url = 'https://app.bananacrystal.com/stores/';
+			$sign_up_url = 'https://www.bananacrystal.com/business/';
 	    $ipn_notification_url = site_url().'/?wc-api=wo_banana_crystal';
+
+
 	  
 		$this->form_fields = array(
-		    'help_text' => array(
-                'title' => __('Set your Thank you page Redirect URL <code>'.$thankyou_page_url.'</code> in your BananaCrystal account <a href="'.$setting_page_url.'" target="_blank">settings</a> integrations page.', 'wo-banana-crystal' ),
-                'type' => 'title',
-                'id'   => 'wo-banana-crystal_help_text'
-            ),
-             'help_text_ipn' => array(
-                'title' => __('Set your Payment Notifications URL redirect uri <code>'.$ipn_notification_url.'</code> in your BananaCrystal account <a href="'.$setting_page_url.'" target="_blank">settings</a> integrations page.', 'wo-banana-crystal' ),
-                'type' => 'title',
-                'id'   => 'wo-banana-crystal_help_ipn'
-            ),
+			'help_text_signup' => array(
+				'title' => __('<a href="'.$sign_up_url.'" target="_blank">Sign up</a> to start accetping payments with BananaCrystal', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text_signup'
+			),
+			'help_text_heading1' => array(
+				'title' => __('<u>Woocommerce Settings</u>', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text'
+			),
 			'enabled' => array(
 				'title'		=> __( 'Enable / Disable', 'wo-banana-crystal' ),
 				'label'		=> __( 'Enable this payment gateway', 'wo-banana-crystal' ),
@@ -120,21 +123,48 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			'title' => array(
 				'title'		=> __( 'Title', 'wo-banana-crystal' ),
 				'type'		=> 'text',
-				'desc_tip'	=> __( 'Payment title of checkout process.', 'wo-banana-crystal' ),
-				'default'	=> __( 'BananaCrystal', 'wo-banana-crystal' ),
+				'desc_tip'	=> __( 'This is the title that the user sees during the checkout process.', 'wo-banana-crystal' ),
+				'default'	=> __( 'BananaCrystal Payments', 'wo-banana-crystal' ),
 			),
 			'description' => array(
 				'title'		=> __( 'Description', 'wo-banana-crystal' ),
 				'type'		=> 'textarea',
-				'desc_tip'	=> __( 'Payment title of checkout process.', 'wo-banana-crystal' ),
-				'default'	=> __( 'Peer-To-Peer Payments.', 'wo-banana-crystal' ),
+				'desc_tip'	=> __( 'This is the description that the user sees during the checkout process.', 'wo-banana-crystal' ),
+				'default'	=> __( 'Secure, Instant, Peer-To-Peer Payments', 'wo-banana-crystal' ),
 				'css'		=> 'max-width:450px;'
 			),
 			'store_username' => array(
 				'title'		=> __( 'BananaCrystal Store Username', 'wo-banana-crystal' ),
 				'type'		=> 'text',
-				'desc_tip'	=> __( 'This is the store username provided by BananaCrystal when you signed up for an account.', 'wo-banana-crystal' ),
-			)
+				'desc_tip'	=> __( 'This is your BananaCrystal store username.', 'wo-banana-crystal' ),
+
+			),
+			'help_text_heading_bc' => array(
+				'title' => __('<u>BananaCrystal Settings</u>', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text'
+			),
+
+			'help_text_title' => array(
+				'title' => __('1. Go to your Store > <a href="'.$setting_page_url.'" target="_blank">Integrations</a> on BananaCrystal', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text'
+			),
+			'help_text_title_add_integration' => array(
+				'title' => __('2. Add a Woocommerce Integration', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text'
+			),
+			'help_text' => array(
+				'title' => __('3. Copy and paste the url below Order Completion ro Thank You Page URL setting<br><br><code>'.$thankyou_page_url.'</code>', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_text'
+		),
+		 'help_text_ipn' => array(
+				'title' => __('4. Copy and paste the url below to Payment Notifications URL <br><br><code>'.$ipn_notification_url.'</code>', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_ipn'
+		),
 		);		
 		
 		
