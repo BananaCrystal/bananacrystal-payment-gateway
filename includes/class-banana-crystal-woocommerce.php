@@ -42,7 +42,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		    add_action( 'woocommerce_api_'.$this->id, array( $this, 'process_ipn_response' ) );
 			add_filter( 'woocommerce_gateway_title', array( $this,'change_payment_gateway_title'), 25, 2);
 
-		}		
+		}			
 	} // Here is the  End __construct()
 
 
@@ -139,6 +139,18 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'desc_tip'	=> __( 'This is your BananaCrystal store username.', 'wo-banana-crystal' ),
 
 			),
+			'subscriptions_enabled' => array(
+				'title'		=> __( 'Enable / Disable Subscriptions', 'wo-banana-crystal' ),
+				'label'		=> __( 'Enable subscriptions for this payment gateway', 'wo-banana-crystal' ),
+				'type'		=> 'checkbox',
+				'default'	=> 'no',
+			),
+			'subscription_key' => array(
+				'title'		=> __( 'Subscription Key', 'wo-banana-crystal' ),
+				'type'		=> 'text',
+				'desc_tip'	=> __( 'This is your BananaCrystal subscription key.', 'wo-banana-crystal' ),
+
+			),
 			'help_text_heading_bc' => array(
 				'title' => __('<u>BananaCrystal Settings</u>', 'wo-banana-crystal' ),
 				'type' => 'title',
@@ -159,12 +171,22 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'title' => __('3. Copy and paste the url below Order Completion ro Thank You Page URL setting<br><br><code>'.$thankyou_page_url.'</code>', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_text'
-		),
-		 'help_text_ipn' => array(
-				'title' => __('4. Copy and paste the url below to Payment Notifications URL <br><br><code>'.$ipn_notification_url.'</code>', 'wo-banana-crystal' ),
+			),
+			'help_text_ipn' => array(
+					'title' => __('4. Copy and paste the url below to Payment Notifications URL <br><br><code>'.$ipn_notification_url.'</code>', 'wo-banana-crystal' ),
+					'type' => 'title',
+					'id'   => 'wo-banana-crystal_help_ipn'
+			),
+			'help_text_subscription' => array(
+				'title' => __('5. Enable your subscription by clicking enable subscription checkbox', 'wo-banana-crystal' ),
 				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_ipn'
-		),
+				'id'   => 'wo-banana-crystal_help_subscription'
+			),
+			'help_text_subscription_key' => array(
+				'title' => __('6. View your integration and copy your subscription key from Api Key', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_subscription_key'
+			)
 		);		
 		
 		
