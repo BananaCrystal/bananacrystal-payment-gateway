@@ -120,11 +120,9 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	    $order_param = WC_Admin_Settings::get_option('woocommerce_checkout_order_received_endpoint', 'order-received' );
 	    $thankyou_page_url = wc_get_checkout_url() . $order_param . '/order_id';
 	    $setting_page_url = 'https://app.bananacrystal.com/stores/';
-			$sign_up_url = 'https://www.bananacrystal.com/business/';
+		$sign_up_url = 'https://www.bananacrystal.com/business/';
 	    $ipn_notification_url = site_url().'/?wc-api=wo_banana_crystal';
 
-
-	  
 		$this->form_fields = array(
 			'help_text_signup' => array(
 				'title' => __('<a href="'.$sign_up_url.'" target="_blank">Sign up</a> to start accetping payments with BananaCrystal', 'wo-banana-crystal' ),
@@ -169,7 +167,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			),
 			'subscription_key' => array(
 				'title'		=> __( 'Subscription Key', 'wo-banana-crystal' ),
-				'type'		=> 'text',
+				'type'		=> 'password',
 				'desc_tip'	=> __( 'This is your BananaCrystal subscription key.', 'wo-banana-crystal' ),
 
 			),
