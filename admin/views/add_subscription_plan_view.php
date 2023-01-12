@@ -20,7 +20,7 @@
                             <tr valign="top">
                                 <th scope="row">Description/Features:</th>
                                 <td>
-                                   <?php wp_editor( '', 'editsometxt', array('required'=>true, 'textarea_name'=>'plan_description','media_buttons'=>false,'tinymce'=>true,'textarea_rows'=>10,'wpautop'=>false)); ?>
+                                   <?php wp_editor( '', 'editsometxt', array('required'=>true, 'textarea_name'=>'plan_description','media_buttons'=>true,'tinymce'=>true,'textarea_rows'=>10,'wpautop'=>false)); ?>
                                 </td>
                             </tr>
 

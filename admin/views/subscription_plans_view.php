@@ -41,7 +41,7 @@
                             <td width='20%'>$plan->subscription_plan_id</td>
                             <td width='20%'>$plan->subscription_plan_title</td>
                             <td width='20%'>$plan->subscription_plan_amount</td>
-                            <td width='20%'>$plan->subscription_plan_occurrence</td>
+                            <td width='20%'>".format_occurrence($plan->subscription_plan_occurrence)."</td>
                             <td width='20%'><a class='button' href='admin.php?page=update-bc-subscription-plan&upt=$plan->subscription_plan_id'>Edit</a> <a  class='button' href='admin.php?page=bc-subscription-plans&del=$plan->subscription_plan_id' onclick='return confirm(\"Are you sure?\");'>Delete</a></td>
                         </tr>
                         ";

@@ -41,7 +41,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		} else {
 		    add_action( 'woocommerce_api_'.$this->id, array( $this, 'process_ipn_response' ) );
 			add_filter( 'woocommerce_gateway_title', array( $this,'change_payment_gateway_title'), 25, 2);
-
+			add_action( 'wp_loaded', array( $this, 'process_subscription' ) );
 		}			
 	} // Here is the  End __construct()
 
@@ -53,6 +53,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	 * */
 	public function process_ipn_response() {
 		global $woocommerce;
+		global $wpdb;
 		$data = file_get_contents("php://input", false, stream_context_get_default(), 0, $_SERVER["CONTENT_LENGTH"]);
 	    $data = json_decode( $data);
 		
@@ -60,18 +61,39 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		$logger = wc_get_logger();
     
 		// LOG THE IPN ORDER TO CUSTOM "banana-crystal" LOG
-		//$logger->info( wc_print_r( $data, true ), array( 'source' => 'banana-crystal' ) );
+		$logger->info( wc_print_r( $data, true ), array( 'source' => 'banana-crystal' ) );
 		
 		$response = ['success' => false];
 		if ($data->payment_status == 'completed') {
-		   //check if request is from Banana Crystal
-		  $data->cmd = "notify-validate";
 
-		  $verifyResponse = $this->verifyPayload($data);
-		  $logger->info( wc_print_r(    $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
-		 
-		  $order = new WC_Order( $data->order_id );
-		  $order->payment_complete();
+			//execute subscription flow
+			if (isset($data->woocommerce_plan_id)) {
+				$plan = get_subscription_plan($data->woocommerce_plan_id);
+			    //create subscription
+			    $subscription_data = [
+			        'subscription_plan_id' => $plan->subscription_plan_id,
+		    	    'user_id' => $data->order_id,
+		        	'subscription_title' => $plan->subscription_plan_title,
+		        	'subscription_occurrence' => $plan->subscription_plan_occurrence,
+		        	'subscription_amount' => $plan->subscription_plan_amount,
+		        	'buyer_user_name' => $data->payer_username,
+		        	'payload' => json_encode($data),
+		        	'subscription_status' => 'ACTIVE',
+		        	'created_at' => date('Y-m-d H:i:s'),
+		        	'expired_at' => get_expiry_date_by_occurence($plan->subscription_plan_occurrence)
+		    	];
+		    	$wpdb->insert($wpdb->prefix.'banana_crystal_subscriptions', $subscription_data);
+			} else { //execute one time payment flow				
+				//check if request is from Banana Crystal
+				$data->cmd = "notify-validate";
+
+				$verifyResponse = $this->verifyPayload($data);
+				$logger->info( wc_print_r(    $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
+				
+				$order = new WC_Order( $data->order_id );
+				$order->payment_complete();
+			}
+			
 		  $response['success'] = true;
 		} else if ($data->payment_status == 'failed') {
 		  $order = new WC_Order( $data->order_id );
@@ -279,6 +301,24 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         $response = curl_exec($curl);
         curl_close($curl);
         return $response;
+	}
+
+
+	public function process_subscription() {
+		if (isset($_POST['bc_subscription_buy_now'])) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'banana_crystal_subscriptions WHERE deleted_at IS NULL AND subscription_plan_id='.$_POST['bc_subscription_id'];
+			$result = $wpdb->get_row("SELECT * FROM $table_name");
+			if ($result) {
+				$user = wp_get_current_user();
+				//redirect urser to store banana crystal payment page
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&ref='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
+				$store_user_name = $this->get_option( 'store_username' );
+				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
+				wp_redirect( $redirect_url );
+				exit;
+			}
+		}
 	}
 
 }

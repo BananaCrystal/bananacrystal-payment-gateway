@@ -1,0 +1,79 @@
+<?php
+
+class Banana_Crystal_Subscription {
+
+	function __construct() {
+		add_action( 'wp_loaded', array( $this, 'load_process' ) );	
+		add_action( 'init', array( $this, 'add_endpoint' ) );	
+
+		
+		add_filter( 'query_vars', array( $this, 'bc_subscription_query_vars'), 0 );
+		add_filter( 'woocommerce_account_menu_items', array( $this, 'bc_subscription_link_my_account') );
+		add_action( 'woocommerce_account_bc-subscription_endpoint', array( $this, 'bc_subscription_content') );		
+	} // Here is the  End __construct()
+
+	public function load_process() {
+		$this->process_subscription();
+		$this->cancel_subscription();
+	}
+	
+	public function process_subscription() {
+		if (isset($_POST['bc_subscription_buy_now'])) {
+
+			//redirect user to login if not already loggedin
+		   if (!is_user_logged_in()) {
+		       wp_redirect( site_url().'/my-account/' );
+				exit;
+		   }
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'banana_crystal_subscription_plans';
+			$result = $wpdb->get_row("SELECT * FROM $table_name  WHERE deleted_at IS NULL AND subscription_plan_id=".$_POST['bc_subscription_id']);
+			if ($result) {
+				$user = wp_get_current_user();
+				$banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
+
+				//redirect urser to store banana crystal payment page
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&ref='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
+				$store_user_name = $banana_crystal_settings['store_username'];
+				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
+				wp_redirect( $redirect_url );
+				exit;
+			}
+		}
+	}
+
+	public function cancel_subscription() {
+		if (isset($_POST['bc_subscription_cancel_btn'])) {
+			global $wpdb;
+			$table_name = $wpdb->prefix . 'banana_crystal_subscriptions';
+			$subscriptionID = $_POST['bc_subscription_id'];
+			$wpdb->update($table_name, ['subscription_status' => 'CANCELLED'], ['subscription_id' => $subscriptionID]);
+		}
+	}
+
+	function add_endpoint() {
+		add_rewrite_endpoint( 'bc-subscription', EP_ROOT | EP_PAGES );
+	}
+
+	function bc_subscription_query_vars( $vars ) {
+		$vars[] = 'bc-subscription';
+		return $vars;
+	}	
+
+	function bc_subscription_link_my_account( $items ) {
+		if ($this->is_subscription_enabled()) {
+			$items['bc-subscription'] = 'Banana Crystal Subscription';
+		}
+		return $items;
+	}
+	
+	public function bc_subscription_content() {
+		echo '<h4 style="text-align: center;">Current Subscription Plan</h4>';
+		echo do_shortcode( '[banana-crystal-current-subscription]' );
+	}
+
+	function is_subscription_enabled() {
+		$banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
+		return ($banana_crystal_settings['subscriptions_enabled'] == 'yes' ? true : false); 
+	}
+}

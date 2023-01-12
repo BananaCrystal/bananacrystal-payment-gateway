@@ -3,7 +3,7 @@
     width: 100%;
     text-align: center;
     max-width: 100% !important;
-    display: flex;
+    align-self: center;
 }
 
 .product_pack_item {
@@ -55,43 +55,42 @@
 <div class="pack_content_wrapper">
 <?php
     global $wpdb;
+    $user_id = get_current_user_id();
+    $table_name = $wpdb->prefix . 'banana_crystal_subscriptions';
+    $plan = $wpdb->get_row("SELECT * FROM ".$table_name." WHERE user_id=".$user_id." AND subscription_status='ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1");
+    if ($plan) { ?>
 
-    $table_name = $wpdb->prefix . 'banana_crystal_subscription_plans';
-    $result = $wpdb->get_results("SELECT * FROM $table_name WHERE deleted_at IS NULL");
-    if (count($result) > 0) {
-        foreach ($result as $plan) { ?>
                     <div class="product_pack_item ">
                             <div class="pack_price">
 
                                 <span class="dps-amount">
-                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo $plan->subscription_plan_amount; ?></bdi></span>                                </span>
+                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo $plan->subscription_amount; ?></bdi></span>                                </span>
                                     <span class="dps-rec-period">
-                                        <span class="sep">/</span> <?php echo format_occurrence($plan->subscription_plan_occurrence); ?>                                   
+                                        <span class="sep">/</span><?php echo format_occurrence($plan->subscription_occurrence); ?>                                   
                                     </span>
                             </div><!-- .pack_price -->
 
                             <div class="pack_content">
-                                <h2><?php echo $plan->subscription_plan_title; ?></h2>
+                                <h2><?php echo $plan->subscription_title; ?></h2>
                                 
                                 <div class="pack_data_option">
-                                   <?php echo htmlspecialchars_decode($plan->subscription_plan_description); ?>
+                                    Expires at: <?php echo format_date($plan->expired_at, 'M/d/Y'); ?>
                                 </div><!-- .pack_data_option -->
                             </div><!-- .pack_content -->
 
                             <div class="buy_pack_button">
                           <form action="" method="post">
-							  <input type="hidden" name="bc_subscription_id" value="<?php echo $plan->subscription_plan_id; ?>">
-                              <button type="submit" class="buy_product_pack" name="bc_subscription_buy_now">Buy Now</button>
+							  <input type="hidden" name="bc_subscription_id" value="<?php echo $plan->subscription_id; ?>">
+                              <button type="submit" class="buy_product_pack" name="bc_subscription_cancel_btn" onclick="return confirm('Are you sure this can not be reverted?');">Cancel Subscription</button>
                           </form>
                            
                         </div><!-- .buy_pack_button -->
                     </div><!-- .product_pack_item -->   
                 <?php    
-        }
     } else { ?>
         <div class="product_pack_item ">
             <div class="pack_content">
-                <h2>No packages added yet!</h2>
+                <h2>No Subscriptions found!</h2>
             </div>
         </div>
     <?php } ?>

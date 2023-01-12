@@ -11,10 +11,13 @@ class Subscription_Plan {
 
         //create table on activation
         register_activation_hook( __FILE__, 'init_table');
+        $this->init_table();
         //add in menu
         add_action('admin_menu',  array( $this, 'add_plan_admin_menu'));
         //add shortcode to show subscription plans
         add_shortcode('banana-crystal-subscription-plans', array( $this, 'show_subscription_plans_shortcode'));
+        //add shortcode to show subscription plans
+        add_shortcode('banana-crystal-current-subscription', array( $this, 'show_current_subscription_shortcode'));
     }
 
     /**
@@ -50,12 +53,15 @@ class Subscription_Plan {
             `subscription_amount` decimal(11,2) NOT NULL,
             `buyer_user_name` varchar(255) NOT NULL,
             `payload` text DEFAULT NULL,
+            `subscription_status` varchar(255) DEFAULT 'PENDING',
             `created_at` timestamp DEFAULT now(),
             `expired_at` timestamp NOT NULL,
             `deleted_at` timestamp DEFAULT NULL,
             PRIMARY KEY(subscription_id)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
             ";
+
+
         if ($wpdb->get_var("SHOW TABLES LIKE '$this->table_name_subscription'") != $this->table_name_subscription) {
             require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
             dbDelta($sql);
@@ -179,9 +185,29 @@ class Subscription_Plan {
      * @return mixed/string
      */
     public function show_subscription_plans_shortcode() {
-        ob_start();
-        require_once __DIR__.'/views/subscription_plans_front.php';
-        $return_string = ob_get_flush();
-        return $return_string;
+        $banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
+        if ( $banana_crystal_settings['subscriptions_enabled'] == 'yes') {
+            ob_start();
+            @include(__DIR__.'/views/subscription_plans_front.php');
+            return ob_get_clean();
+        }
+
+        return  '<strong>Subscriptions is not enabled.</strong>';
+    }
+
+    /**
+     * Implement shortcode for current subscription plan
+     * 
+     * @return mixed/string
+     */
+    public function show_current_subscription_shortcode() {
+        $banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
+        if ( $banana_crystal_settings['subscriptions_enabled'] == 'yes') {
+            ob_start();
+            @include(__DIR__.'/views/current_subscription_front.php');
+            return ob_get_clean();
+        }
+
+        return  '<strong>Subscriptions is not enabled.</strong>';
     }
 }
