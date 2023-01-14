@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       BananaCrystal Payment Gateway
  * Description:       Fast secure, low-cost, borderless, local and international payments in USD powered by blockchain/crypto payment rails. Send and receive secure peer to peer payments to anyone instantly at no cost to you.
- * Version:           1.0.0
+ * Version:           1.2.0
  * Author:            Banana Crystal
  * Author URI:        https://www.bananacrystal.com/
  * License:           GPL-2.0+
@@ -64,6 +64,12 @@ register_deactivation_hook( __FILE__, 'deactivate_woocommerce_gateway_banana_cry
 require plugin_dir_path( __FILE__ ) . 'includes/class-woocommerce-gateway-banana-crystal.php';
 
 /**
+ * The core helper function file to assist in code
+ * 
+ */
+require plugin_dir_path( __FILE__ ) . 'includes/helpers_functions.php';
+
+/**
  * Load plugin files
  */
 add_action( 'plugins_loaded', 'wo_banana_crystal_init', 0 );
@@ -77,6 +83,10 @@ function wo_banana_crystal_init() {
     $methods[] = 'Woocommerce_Banana_Crystal';
     return $methods;
   }
+
+  //subscriptions
+  require_once( plugin_dir_path( __FILE__ ) . 'includes/class-banana-crystal-subscription.php' );
+  $banana_crystal_subscription = new Banana_Crystal_Subscription();
 }
 
 // Add custom action links

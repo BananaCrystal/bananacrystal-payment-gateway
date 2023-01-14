@@ -19,7 +19,7 @@ Benefits for your store or business:
 * Accept payments for your store or business almost free! 
 * Payments settle instantly for your store or business with no risk of chargebacks saving you over 20% in fraud and chargeback fees…which you can then pass as savings on to your customers
 * Send payments to your local and international vendors for FREE.  This will enable you access to new markets and industry segments at reduced costs and payment settlement times.
-
+* Accept subscription payments and manage subscription plans.
 
 Benefits for your customers:
 
@@ -32,7 +32,7 @@ You and your customers get privacy on all your purchases. Your bank or credit ca
 * Quick installation and setup.
 * Receive Instant Payment Notifications when a customer makes a payment.
 * Quick configuration with your BananaCrystal store account and your woocommerce store
-
+* Now accept payments through subscription
 
 == Frequently Asked Questions ==
 
@@ -53,3 +53,16 @@ Then, add or update an existing Woocommerce Integration
 = Where can I get support or talk to other users? =
 
 If you get stuck, you can ask for help in the Plugin Forum.
+
+= Where do I get my subscription key or redirect url for thank you page?
+
+Login to your BananaCrystal account and go to Store > Integrations.
+
+Then, add or update an existing Woocommerce Integration enable subscriptions
+
+View the integration to find your subscription key. 
+
+= Can i regenerate my subscription key or revoke previous key?
+
+Yes you regenerate existing key and the previous key would be expired incase
+the key is compromised
