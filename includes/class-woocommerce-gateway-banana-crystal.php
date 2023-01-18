@@ -119,9 +119,9 @@ class Woocommerce_Gateway_Banana_Crystal {
 		/**
 		 * The class responsible for defining admin subscription managemet module
 		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-subscription-plan.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-banana-crystal-subscription-plan.php';
 
-		$subscriptionPlan = new Subscription_Plan();
+		$subscriptionPlan = new Banana_Crystal_Subscription_Plan();
 
 		$this->loader = new Woocommerce_Gateway_Banana_Crystal_Loader();
 
