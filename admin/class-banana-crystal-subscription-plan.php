@@ -112,10 +112,10 @@ class Banana_Crystal_Subscription_Plan {
         //add new subscription plan
         if (isset($_POST['add_btn'])) {
             $data = [
-                'subscription_plan_title' => $_POST['plan_title'],
+                'subscription_plan_title' => sanitize_text_field($_POST['plan_title']),
                 'subscription_plan_description' => htmlspecialchars($_POST['plan_description']),
                 'subscription_plan_amount' => $_POST['plan_recurring_amount'],
-                'subscription_plan_occurrence' => $_POST['plan_occurrence']
+                'subscription_plan_occurrence' => sanitize_text_field($_POST['plan_occurrence'])
             ];
             $wpdb->insert($this->table_name, $data);
             
@@ -125,12 +125,12 @@ class Banana_Crystal_Subscription_Plan {
 
         //update subscription plan
         if (isset($_POST['update_btn'])) {
-            $id = $_POST['plan_id'];
+            $id = (int)sanitize_text_field($_POST['plan_id']);
             $data = [
-                'subscription_plan_title' => $_POST['plan_title'],
+                'subscription_plan_title' => sanitize_text_field($_POST['plan_title']),
                 'subscription_plan_description' => htmlspecialchars($_POST['plan_description']),
                 'subscription_plan_amount' => $_POST['plan_recurring_amount'],
-                'subscription_plan_occurrence' => $_POST['plan_occurrence']
+                'subscription_plan_occurrence' => sanitize_text_field($_POST['plan_occurrence'])
             ];
             $wpdb->update($this->table_name, $data, ['subscription_plan_id' => $id]);
 
@@ -140,7 +140,7 @@ class Banana_Crystal_Subscription_Plan {
 
         //delete subscription plan
         if (isset($_GET['del'])) {
-            $del_id = $_GET['del'];
+            $del_id = (int)sanitize_text_field($_GET['del']);
             $wpdb->update($this->table_name, ['deleted_at' => date('Y-m-d H:i:s')], ['subscription_plan_id' => $del_id]);
  
             wp_redirect( self_admin_url( "admin.php?page=bc-subscription-plans&deleted=1" ) );
