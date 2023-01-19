@@ -6,7 +6,7 @@
  * @param (string) $occur
  * @return (string)
  */
-function format_occurrence($occur) {
+function banana_crystal_format_occurrence($occur) {
     $occur = str_replace('_', ' ', $occur);
     return ucwords($occur);
 }
@@ -19,7 +19,7 @@ function format_occurrence($occur) {
  * @param (string) $format
  * @return (string)
  */
-function format_date($date, $format = 'M/d/Y h:i a') {
+function banana_crystal_format_date($date, $format = 'M/d/Y h:i a') {
     return date($format, strtotime($date));
 }
 
@@ -30,7 +30,7 @@ function format_date($date, $format = 'M/d/Y h:i a') {
  * @param (int) $plan_id
  * @return (object/null)
  */
-function get_subscription_plan($plan_id) {
+function get_banana_crystal_subscription_plan($plan_id) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'banana_crystal_subscription_plans';
     $result = $wpdb->get_row("SELECT * FROM $table_name  WHERE deleted_at IS NULL AND subscription_plan_id=".$plan_id);
@@ -44,7 +44,7 @@ function get_subscription_plan($plan_id) {
  * @param (string) $occur
  * @return (string)
  */
-function get_expiry_date_by_occurence($occur) {
+function get_banana_crystal_expiry_date_by_occurence($occur) {
     $expiry_date = '';
     switch($occur) {
         case 'monthly': 
