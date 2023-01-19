@@ -280,24 +280,22 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         $endpoint = 'https://app.bananacrystal.com/store_integrations/wordpress/notifications/verify';
         $postdata = json_encode($data);
         
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-          CURLOPT_URL =>  $endpoint,
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS =>$postdata,
-          CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json'
-          ),
-        ));
-        
-        $response = curl_exec($curl);
-        curl_close($curl);
+		$request = array(
+			'method'      => 'POST',
+			'timeout'     => 45,
+			'redirection' => 5,
+			'httpversion' => '1.0',
+			'blocking'    => true,
+			'headers'     => array(
+				'Content-Type' => 'application/json; charset=utf-8'
+			),
+			'data_format' => 'body',
+			'body'        => $postdata,
+			'cookies'     => array(),
+			'sslverify'   => false
+		);
+		$response = wp_remote_post( $endpoint, $request);
+
         return $response;
 	}
 
