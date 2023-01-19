@@ -1,5 +1,5 @@
 <?php 
-class Subscription_Plan {
+class Banana_Crystal_Subscription_Plan {
 
     private $table_name = '';
     private $table_name_subscription = '';

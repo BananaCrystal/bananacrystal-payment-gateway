@@ -68,7 +68,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 
 			//execute subscription flow
 			if (isset($data->woocommerce_plan_id)) {
-				$plan = get_subscription_plan($data->woocommerce_plan_id);
+				$plan = get_banana_crystal_subscription_plan($data->woocommerce_plan_id);
 			    //create subscription
 			    $subscription_data = [
 			        'subscription_plan_id' => $plan->subscription_plan_id,
@@ -80,7 +80,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		        	'payload' => json_encode($data),
 		        	'subscription_status' => 'ACTIVE',
 		        	'created_at' => date('Y-m-d H:i:s'),
-		        	'expired_at' => get_expiry_date_by_occurence($plan->subscription_plan_occurrence)
+		        	'expired_at' => get_banana_crystal_expiry_date_by_occurence($plan->subscription_plan_occurrence)
 		    	];
 		    	$wpdb->insert($wpdb->prefix.'banana_crystal_subscriptions', $subscription_data);
 			} else { //execute one time payment flow				

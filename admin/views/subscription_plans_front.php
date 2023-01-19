@@ -66,7 +66,7 @@
                                 <span class="dps-amount">
                                     <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo number_format($plan->subscription_plan_amount, 2); ?></bdi></span>                                </span>
                                     <span class="dps-rec-period">
-                                        <span class="sep">/</span> <?php echo esc_html(format_occurrence($plan->subscription_plan_occurrence)); ?>                                   
+                                        <span class="sep">/</span> <?php echo esc_html(banana_crystal_format_occurrence($plan->subscription_plan_occurrence)); ?>                                   
                                     </span>
                             </div><!-- .pack_price -->
 

@@ -25,7 +25,7 @@ function bc_renew_subscription() {
             if (!isset($result->id)) {
                 $wpdb->update($table_name, ['subscription_status' => 'EXPIRED'], ['subscription_id' => $subscription->subscription_id]);
             } else {
-                $new_expiry_date = get_expiry_date_by_occurence($subscription->subscription_occurrence);
+                $new_expiry_date = get_banana_crystal_expiry_date_by_occurence($subscription->subscription_occurrence);
                 $wpdb->update($table_name, ['expired_at' => $new_expiry_date], ['subscription_id' => $subscription->subscription_id]);
             }
         }

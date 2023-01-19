@@ -1,7 +1,7 @@
 <?php
     $plan_row = null;
     if (isset($_GET['upt'])) {
-        $plan_row = get_subscription_plan($_GET['upt']);
+        $plan_row = get_banana_crystal_subscription_plan($_GET['upt']);
     }
 ?>
 <style>

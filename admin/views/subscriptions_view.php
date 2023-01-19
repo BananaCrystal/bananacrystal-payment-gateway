@@ -24,13 +24,13 @@
                     foreach ($result as $plan) {
                         echo "
                         <tr>
-                            <td width='15%'>".esc_html(format_date($plan->created_at))."</td>
+                            <td width='15%'>".esc_html(banana_crystal_format_date($plan->created_at))."</td>
                             <td width='20%'>".esc_html($plan->display_name)." (".esc_html($plan->user_email).")</td>
                             <td width='5%'>$plan->subscription_plan_id</td>
                             <td width='20%'>".esc_html($plan->subscription_title)."</td>
                             <td width='10%'>".number_format($plan->subscription_amount, 2)."</td>
-                            <td width='10%'>".esc_html(format_occurrence($plan->subscription_occurrence))."</td>
-                            <td width='10%'>".esc_html(format_date($plan->expired_at))."</td>
+                            <td width='10%'>".esc_html(banana_crystal_format_occurrence($plan->subscription_occurrence))."</td>
+                            <td width='10%'>".esc_html(banana_crystal_format_date($plan->expired_at))."</td>
                             <td width='10%'>".esc_html($plan->subscription_status)."</td>
                         </tr>
                         ";
