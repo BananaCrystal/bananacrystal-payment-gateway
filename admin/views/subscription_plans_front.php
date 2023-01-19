@@ -64,17 +64,36 @@
                             <div class="pack_price">
 
                                 <span class="dps-amount">
-                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo $plan->subscription_plan_amount; ?></bdi></span>                                </span>
+                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo number_format($plan->subscription_plan_amount, 2); ?></bdi></span>                                </span>
                                     <span class="dps-rec-period">
-                                        <span class="sep">/</span> <?php echo banana_crystal_format_occurrence($plan->subscription_plan_occurrence); ?>                                   
+                                        <span class="sep">/</span> <?php echo esc_html(banana_crystal_format_occurrence($plan->subscription_plan_occurrence)); ?>                                   
                                     </span>
                             </div><!-- .pack_price -->
 
                             <div class="pack_content">
-                                <h2><?php echo $plan->subscription_plan_title; ?></h2>
+                                <h2><?php echo esc_html($plan->subscription_plan_title); ?></h2>
                                 
                                 <div class="pack_data_option">
-                                   <?php echo htmlspecialchars_decode($plan->subscription_plan_description); ?>
+                                   <?php echo wp_kses(
+                                       htmlspecialchars_decode($plan->subscription_plan_description),
+                                        array(
+                                            'img' => array(),
+                                            'strong' => array(),
+                                            'a' => array(),
+                                            'ol' => array(),
+                                            'li' => array(),
+                                            'ul' => array(),
+                                            'h1' => array(),
+                                            'h2' => array(),
+                                            'h3' => array(),
+                                            'h4' => array(),
+                                            'h5' => array(),
+                                            'h6' => array(),
+                                            'p' => array(),
+                                            'i' => array(),
+                                            'blockquote' => array(),
+                                        )
+                                    ); ?>
                                 </div><!-- .pack_data_option -->
                             </div><!-- .pack_content -->
 

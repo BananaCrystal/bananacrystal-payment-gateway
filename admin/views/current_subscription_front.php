@@ -64,17 +64,17 @@
                             <div class="pack_price">
 
                                 <span class="dps-amount">
-                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo $plan->subscription_amount; ?></bdi></span>                                </span>
+                                    <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">$</span><?php echo number_format($plan->subscription_amount, 2); ?></bdi></span>                                </span>
                                     <span class="dps-rec-period">
-                                        <span class="sep">/</span><?php echo banana_crystal_format_occurrence($plan->subscription_occurrence); ?>                                   
+                                        <span class="sep">/</span><?php echo esc_html(banana_crystal_format_occurrence($plan->subscription_occurrence)); ?>                                   
                                     </span>
                             </div><!-- .pack_price -->
 
                             <div class="pack_content">
-                                <h2><?php echo $plan->subscription_title; ?></h2>
+                                <h2><?php echo esc_html($plan->subscription_title); ?></h2>
                                 
                                 <div class="pack_data_option">
-                                    Expires at: <?php echo banana_crystal_format_date($plan->expired_at, 'M/d/Y'); ?>
+                                    Expires at: <?php echo esc_html(banana_crystal_format_date($plan->expired_at, 'M/d/Y')); ?>
                                 </div><!-- .pack_data_option -->
                             </div><!-- .pack_content -->
 
