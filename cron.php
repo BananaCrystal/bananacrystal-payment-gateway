@@ -19,14 +19,17 @@ function bc_renew_subscription() {
                 'subscriber_username' => $subscription->buyer_user_name,
                 'store_username' => $store_username
             ];
-            $result = bananaCrystalChargePayment($data, $subscription_key);
-
-            //if payment failed update status to Expired
-            if (!isset($result->id)) {
+            $result = banana_crystal_charge_payment($data, $subscription_key);
+            if ( is_wp_error( $result ) ) { 
                 $wpdb->update($table_name, ['subscription_status' => 'EXPIRED'], ['subscription_id' => $subscription->subscription_id]);
             } else {
-                $new_expiry_date = get_banana_crystal_expiry_date_by_occurence($subscription->subscription_occurrence);
-                $wpdb->update($table_name, ['expired_at' => $new_expiry_date], ['subscription_id' => $subscription->subscription_id]);
+                //if payment failed update status to Expired
+                if (!isset($result->id)) {
+                    $wpdb->update($table_name, ['subscription_status' => 'EXPIRED'], ['subscription_id' => $subscription->subscription_id]);
+                } else {
+                    $new_expiry_date = get_banana_crystal_expiry_date_by_occurence($subscription->subscription_occurrence);
+                    $wpdb->update($table_name, ['expired_at' => $new_expiry_date], ['subscription_id' => $subscription->subscription_id]);
+                }
             }
         }
     }
@@ -38,28 +41,26 @@ function bc_renew_subscription() {
  * @params (array)$data
  * @return (mixed)
  **/
-private function bananaCrystalChargePayment($data, $key) {
+private function banana_crystal_charge_payment($data, $key) {
     $endpoint = 'https://app.bananacrystal.com/api/v1/payment_subscriptions';
     $postdata = json_encode($data);
-    
-    $curl = curl_init();
-    curl_setopt_array($curl, array(
-      CURLOPT_URL =>  $endpoint,
-      CURLOPT_RETURNTRANSFER => true,
-      CURLOPT_ENCODING => '',
-      CURLOPT_MAXREDIRS => 10,
-      CURLOPT_TIMEOUT => 0,
-      CURLOPT_FOLLOWLOCATION => true,
-      CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      CURLOPT_CUSTOMREQUEST => 'POST',
-      CURLOPT_POSTFIELDS =>$postdata,
-      CURLOPT_HTTPHEADER => array(
-        'Content-Type: application/json',
-        'Authorization: Bearer '.$key
-      ),
-    ));
-    
-    $response = curl_exec($curl);
-    curl_close($curl);
+
+    $request = array(
+        'method'      => 'POST',
+        'timeout'     => 45,
+        'redirection' => 5,
+        'httpversion' => '1.0',
+        'blocking'    => true,
+        'headers'     => array(
+            'Content-Type' => 'application/json; charset=utf-8',
+            'Authorization' => 'Bearer '.$key
+        ),
+        'data_format' => 'body',
+        'body'        => $postdata,
+        'cookies'     => array(),
+        'sslverify'   => true
+    );
+    $response = wp_remote_post( $endpoint, $request);
+
     return $response;
 }
