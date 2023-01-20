@@ -61,7 +61,7 @@ class Banana_Crystal_Subscription {
 		if (isset($_POST['bc_subscription_cancel_btn'])) {
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'banana_crystal_subscriptions';
-			$subscriptionID = $_POST['bc_subscription_id'];
+			$subscriptionID = (int)sanitize_text_field($_POST['bc_subscription_id']);
 			$wpdb->update($table_name, ['subscription_status' => 'CANCELLED'], ['subscription_id' => $subscriptionID]);
 		}
 	}

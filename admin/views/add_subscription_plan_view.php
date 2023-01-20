@@ -1,7 +1,7 @@
 <?php
     $plan_row = null;
     if (isset($_GET['upt'])) {
-        $plan_row = get_banana_crystal_subscription_plan($_GET['upt']);
+        $plan_row = get_banana_crystal_subscription_plan((int)sanitize_text_field($_GET['upt']));
     }
 ?>
 <style>
@@ -31,7 +31,7 @@
                             <tr valign="top">
                                 <th scope="row">Description/Features:</th>
                                 <td>
-                                   <?php wp_editor( ($plan_row ? $plan_row->subscription_plan_description : ''), 'editsometxt', array('required'=>true, 'textarea_name'=>'plan_description','media_buttons'=>true,'tinymce'=>true,'textarea_rows'=>10,'wpautop'=>false)); ?>
+                                   <?php wp_editor( ($plan_row ? htmlspecialchars_decode($plan_row->subscription_plan_description) : ''), 'editsometxt', array('required'=>true, 'textarea_name'=>'plan_description','media_buttons'=>true,'tinymce'=>true,'textarea_rows'=>10,'wpautop'=>false)); ?>
                                 </td>
                             </tr>
 
