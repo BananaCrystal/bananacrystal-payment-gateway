@@ -19,7 +19,7 @@ function bc_renew_subscription() {
                 'subscriber_username' => $subscription->buyer_user_name,
                 'store_username' => $store_username
             ];
-            $result = bananaCrystalChargePayment($data, $subscription_key);
+            $result = banana_crystal_charge_payment($data, $subscription_key);
             if ( is_wp_error( $result ) ) { 
                 $wpdb->update($table_name, ['subscription_status' => 'EXPIRED'], ['subscription_id' => $subscription->subscription_id]);
             } else {
@@ -41,7 +41,7 @@ function bc_renew_subscription() {
  * @params (array)$data
  * @return (mixed)
  **/
-private function bananaCrystalChargePayment($data, $key) {
+private function banana_crystal_charge_payment($data, $key) {
     $endpoint = 'https://app.bananacrystal.com/api/v1/payment_subscriptions';
     $postdata = json_encode($data);
 
@@ -58,7 +58,7 @@ private function bananaCrystalChargePayment($data, $key) {
         'data_format' => 'body',
         'body'        => $postdata,
         'cookies'     => array(),
-        'sslverify'   => false
+        'sslverify'   => true
     );
     $response = wp_remote_post( $endpoint, $request);
 

@@ -292,7 +292,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			'data_format' => 'body',
 			'body'        => $postdata,
 			'cookies'     => array(),
-			'sslverify'   => false
+			'sslverify'   => true
 		);
 		$response = wp_remote_post( $endpoint, $request);
 
