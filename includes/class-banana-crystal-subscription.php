@@ -43,7 +43,7 @@ class Banana_Crystal_Subscription {
 				$banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
 
 				//redirect urser to store banana crystal payment page
-				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&ref='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscription_user_id='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
 				$store_user_name = $banana_crystal_settings['store_username'];
 				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
 				wp_redirect( $redirect_url );
