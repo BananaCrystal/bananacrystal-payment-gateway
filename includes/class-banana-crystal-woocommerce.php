@@ -203,15 +203,15 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'id'   => 'wo-banana-crystal_help_subscription'
 			),
 			'help_text_subscription_key' => array(
-				'title' => __('6. View your integration and copy your subscription key from Api Key', 'wo-banana-crystal' ),
+				'title' => __('6. View your integration and copy the API key for the subscription key', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_subscription_key'
 			)
-		);		
-		
-		
+		);
+
+
 	}
-	
+
 	// Response handled for payment gateway
 	public function process_payment( $order_id ) {
         global $woocommerce;
@@ -236,7 +236,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         }
                 
         
-        //redirect urser to store banana crystal payment page
+        //redirect user to store banana crystal payment page
         $params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='. base64_encode($order_key);
         $store_user_name = $this->get_option( 'store_username' );
         $redirect_url = 'https://app.bananacrystal.com/payme/'.$store_user_name.$params;
@@ -279,7 +279,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	private function verifyPayload($data) {
         $endpoint = 'https://app.bananacrystal.com/store_integrations/wordpress/notifications/verify';
         $postdata = json_encode($data);
-        
+
 		$request = array(
 			'method'      => 'POST',
 			'timeout'     => 45,
@@ -307,8 +307,8 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			$result = $wpdb->get_row("SELECT * FROM $table_name");
 			if ($result) {
 				$user = wp_get_current_user();
-				//redirect urser to store banana crystal payment page
-				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscription_user_id='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
+				//redirect user to store banana crystal payment page
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscriber_user_id='.base64_encode($user->ID).'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.base64_encode($user->user_login);
 				$store_user_name = $this->get_option( 'store_username' );
 				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
 				wp_redirect( $redirect_url );

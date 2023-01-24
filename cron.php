@@ -14,7 +14,7 @@ function bc_renew_subscription() {
                 'sender' => $subscription->buyer_user_name,
                 'amount' => $subscription->subscription_amount,
                 'note' => $subscription->subscription_title,
-                'subscription_user_id' => $subscription->user_id,
+                'subscriber_user_id' => $subscription->user_id,
                 'subscription_id' => $subscription->subscription_plan_id,
                 'subscriber_username' => $subscription->buyer_user_name,
                 'store_username' => $store_username
