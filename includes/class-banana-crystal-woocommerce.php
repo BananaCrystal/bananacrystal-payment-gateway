@@ -55,24 +55,29 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		global $woocommerce;
 		global $wpdb;
 		$data = file_get_contents("php://input", false, stream_context_get_default(), 0, $_SERVER["CONTENT_LENGTH"]);
-	    $data = json_decode( $data);
-		
+	  $data = json_decode( $data);
+
+		// VERIFY DATA
+		//check if request is from Banana Crystal
+		$data->cmd = "notify-validate";
+		$verifyResponse = $this->verifyPayload($data);
+
 		// LOAD THE WC LOGGER
 		$logger = wc_get_logger();
-    
-		// LOG THE IPN ORDER TO CUSTOM "banana-crystal" LOG
-		$logger->info( wc_print_r( $data, true ), array( 'source' => 'banana-crystal' ) );
-		
-		$response = ['success' => false];
-		if ($data->payment_status == 'completed') {
 
+		// LOG THE IPN ORDER TO CUSTOM "banana-crystal" LOG
+		$logger->info( wc_print_r( $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
+
+		$response = ['success' => false];
+		
+		if ($data->payment_status == 'completed') {
 			//execute subscription flow
-			if (isset($data->woocommerce_plan_id)) {
-				$plan = get_banana_crystal_subscription_plan($data->woocommerce_plan_id);
+			if (isset($data->subscription_plan_id)) {
+				$plan = get_banana_crystal_subscription_plan($data->subscription_plan_id);
 			    //create subscription
 			    $subscription_data = [
 			        'subscription_plan_id' => $plan->subscription_plan_id,
-		    	    'user_id' => $data->order_id,
+		    	    'user_id' => $data->subscriber_user_id,
 		        	'subscription_title' => $plan->subscription_plan_title,
 		        	'subscription_occurrence' => $plan->subscription_plan_occurrence,
 		        	'subscription_amount' => $plan->subscription_plan_amount,
@@ -83,18 +88,12 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		        	'expired_at' => get_banana_crystal_expiry_date_by_occurence($plan->subscription_plan_occurrence)
 		    	];
 		    	$wpdb->insert($wpdb->prefix.'banana_crystal_subscriptions', $subscription_data);
-			} else { //execute one time payment flow				
-				//check if request is from Banana Crystal
-				$data->cmd = "notify-validate";
-
-				$verifyResponse = $this->verifyPayload($data);
-				$logger->info( wc_print_r(    $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
-				
+			} else { //execute one time payment flow
 				$order = new WC_Order( $data->order_id );
 				$order->payment_complete();
 			}
-			
 		  $response['success'] = true;
+
 		} else if ($data->payment_status == 'failed') {
 		  $order = new WC_Order( $data->order_id );
 		  $order->update_status('failed', __( 'Payment status failed', 'wo-banana-crystal' ));
