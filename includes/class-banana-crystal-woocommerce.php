@@ -143,7 +143,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'title'		=> __( 'Title', 'wo-banana-crystal' ),
 				'type'		=> 'text',
 				'desc_tip'	=> __( 'This is the title that the user sees during the checkout process.', 'wo-banana-crystal' ),
-				'default'	=> __( 'BananaCrystal Payments', 'wo-banana-crystal' ),
+				'default'	=> __( 'Pay with ', 'wo-banana-crystal' ),
 			),
 			'description' => array(
 				'title'		=> __( 'Description', 'wo-banana-crystal' ),
