@@ -3,13 +3,13 @@
 class Banana_Crystal_Subscription {
 
 	function __construct() {
-		add_action( 'wp_loaded', array( $this, 'load_process' ) );	
-		add_action( 'init', array( $this, 'add_endpoint' ) );	
+		add_action( 'wp_loaded', array( $this, 'load_process' ) );
+		add_action( 'init', array( $this, 'add_endpoint' ) );
 
 		
 		add_filter( 'query_vars', array( $this, 'bc_subscription_query_vars'), 0 );
 		add_filter( 'woocommerce_account_menu_items', array( $this, 'bc_subscription_link_my_account') );
-		add_action( 'woocommerce_account_bc-subscription_endpoint', array( $this, 'bc_subscription_content') );		
+		add_action( 'woocommerce_account_bc-subscription_endpoint', array( $this, 'bc_subscription_content') );
 	} // Here is the  End __construct()
 
 	/**
@@ -43,7 +43,7 @@ class Banana_Crystal_Subscription {
 				$banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
 
 				//redirect urser to store banana crystal payment page
-				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscription_user_id='.$user->ID.'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.$user->user_login;
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscriber_user_id='. base64_encode($user->ID).'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='. base64_encode($user->user_login);
 				$store_user_name = $banana_crystal_settings['store_username'];
 				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
 				wp_redirect( $redirect_url );

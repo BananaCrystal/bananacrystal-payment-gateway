@@ -38,7 +38,7 @@
                 } else {
                     echo "
                         <tr>
-                            <td colspan='5'>No subscriptions found!</td>
+                            <td colspan='5'>Currently you do not have any active subscriptions.</td>
                         </tr>
                     ";
                 }
