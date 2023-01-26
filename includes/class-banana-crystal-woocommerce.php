@@ -302,7 +302,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	public function process_subscription() {
 		if (isset($_POST['bc_subscription_buy_now'])) {
 			global $wpdb;
-			$table_name = $wpdb->prefix . 'banana_crystal_subscriptions WHERE deleted_at IS NULL AND subscription_plan_id='.$_POST['bc_subscription_id'];
+			$table_name = $wpdb->prefix . 'banana_crystal_subscriptions WHERE deleted_at IS NULL AND subscription_plan_id='.((int)sanitize_text_field($_POST['bc_subscription_id']));
 			$result = $wpdb->get_row("SELECT * FROM $table_name");
 			if ($result) {
 				$user = wp_get_current_user();

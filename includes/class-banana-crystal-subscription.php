@@ -37,7 +37,7 @@ class Banana_Crystal_Subscription {
 		   }
 			global $wpdb;
 			$table_name = $wpdb->prefix . 'banana_crystal_subscription_plans';
-			$result = $wpdb->get_row("SELECT * FROM $table_name  WHERE deleted_at IS NULL AND subscription_plan_id=".$_POST['bc_subscription_id']);
+			$result = $wpdb->get_row("SELECT * FROM $table_name  WHERE deleted_at IS NULL AND subscription_plan_id=".((int)sanitize_text_field($_POST['bc_subscription_id'])));
 			if ($result) {
 				$user = wp_get_current_user();
 				$banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
