@@ -113,8 +113,8 @@ class Banana_Crystal_Subscription_Plan {
         if (isset($_POST['add_btn'])) {
             $data = [
                 'subscription_plan_title' => sanitize_text_field($_POST['plan_title']),
-                'subscription_plan_description' => htmlspecialchars($_POST['plan_description']),
-                'subscription_plan_amount' => $_POST['plan_recurring_amount'],
+                'subscription_plan_description' => sanitize_text_field(htmlspecialchars($_POST['plan_description'])),
+                'subscription_plan_amount' => number_format(sanitize_text_field($_POST['plan_recurring_amount']),2),
                 'subscription_plan_occurrence' => sanitize_text_field($_POST['plan_occurrence'])
             ];
             $wpdb->insert($this->table_name, $data);
@@ -128,8 +128,8 @@ class Banana_Crystal_Subscription_Plan {
             $id = (int)sanitize_text_field($_POST['plan_id']);
             $data = [
                 'subscription_plan_title' => sanitize_text_field($_POST['plan_title']),
-                'subscription_plan_description' => htmlspecialchars($_POST['plan_description']),
-                'subscription_plan_amount' => $_POST['plan_recurring_amount'],
+                'subscription_plan_description' => sanitize_text_field(htmlspecialchars($_POST['plan_description'])),
+                'subscription_plan_amount' => number_format(sanitize_text_field($_POST['plan_recurring_amount']),2),
                 'subscription_plan_occurrence' => sanitize_text_field($_POST['plan_occurrence'])
             ];
             $wpdb->update($this->table_name, $data, ['subscription_plan_id' => $id]);
