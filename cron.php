@@ -1,5 +1,7 @@
 <?php 
+
 add_action( 'banana_crystal_subscription_new_cron', 'bc_renew_subscription' );
+
 function bc_renew_subscription() {
     global $wpdb;
     $banana_crystal_settings = WC()->payment_gateways->payment_gateways()['wo_banana_crystal']->settings;
@@ -41,7 +43,7 @@ function bc_renew_subscription() {
  * @params (array)$data
  * @return (mixed)
  **/
-private function banana_crystal_charge_payment($data, $key) {
+function banana_crystal_charge_payment($data, $key) {
     $endpoint = 'https://app.bananacrystal.com/api/v1/payment_subscriptions';
     $postdata = json_encode($data);
 
