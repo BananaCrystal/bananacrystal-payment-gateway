@@ -109,3 +109,13 @@ We offer a [referral/partnership program](https://www.bananacrystal.com/partner-
 If you need help with this plugin, you can ask for help in the Plugin Forum.
 
 If you need help regarding a transaction, visit the [BananaCrystal Support Center](https://support.bananacrystal.com/)
+
+== Screenshots ==
+
+1. Admin Settings.
+2. Store Integration Settings on BananaCrystal.
+3. Admin Manage Subscriptions.
+4. Admin Subscriptions Transactions.
+5. Customer Checkout.
+6. Customer Payment Page.
+7. Customer Subscription Payment Page.
