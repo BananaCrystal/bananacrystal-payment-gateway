@@ -3,8 +3,8 @@ Contributors: bananacrystal
 Donate link: https://www.bananacrystal.com/
 Tags: payments, bananacrystal, woocommerce, payment gateway
 Requires at least: 5.0
-Tested up to: 6.1.1
-Stable tag: 1.2.4
+Tested up to: 6.3
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,7 +71,7 @@ First, setup your BananaCrystal merchant/business account for your Woocommerce s
 
 Follow the [Wordpress guidelines on how to install a plugin](https://wordpress.org/support/article/managing-plugins/#installing-plugins-1)
 
-Then navigate to the plugin's admin settings and enter your BananaCrystal store username, redirect url, and payment notification webhook url.
+Then navigate to the plugin's admin settings and enter your BananaCrystal store username, redirect url, order pay url, and payment notification webhook url.
 
 For a detailed guide, see [How to Install the BananaCrystal Payment Gateway Plugin](https://support.bananacrystal.com/hc/en-us/articles/10231530050327)
 
@@ -80,12 +80,11 @@ For a detailed guide, see [How to Install the BananaCrystal Payment Gateway Plug
 
 Login to your BananaCrystal account and go to Store > Settings.
 
-= Where do I configure my redirect url or payment notification webhook?
+= Where do I configure my redirect url or payment notification webhook or order pay url?
 
 Login to your BananaCrystal account and go to Store > Integrations.
 
 Then, add or update a Woocommerce Integration
-
 
 = Where do I get my subscription key or redirect url for thank you page?
 

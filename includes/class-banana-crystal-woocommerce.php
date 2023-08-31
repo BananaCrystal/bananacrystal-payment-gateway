@@ -42,6 +42,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		    add_action( 'woocommerce_api_'.$this->id, array( $this, 'process_ipn_response' ) );
 			add_filter( 'woocommerce_gateway_title', array( $this,'change_payment_gateway_title'), 25, 2);
 			add_action( 'wp_loaded', array( $this, 'process_subscription' ) );
+			add_action( 'before_woocommerce_pay', array( $this, 'order_pay_subtitle_oval') );
 		}			
 	} // Here is the  End __construct()
 
@@ -91,6 +92,8 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			} else { //execute one time payment flow
 				$order = new WC_Order( $data->order_id );
 				$order->payment_complete();
+				//ADD FILTER FOR SUCCESS TRANSACTION
+				apply_filters( 'wo_banana_crystal_payment_success', ['order' => $order]);
 			}
 		  $response['success'] = true;
 
@@ -121,6 +124,8 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	    $setting_page_url = 'https://app.bananacrystal.com/stores/';
 		$sign_up_url = 'https://www.bananacrystal.com/business/';
 	    $ipn_notification_url = site_url().'/?wc-api=wo_banana_crystal';
+		$pay_param = WC_Admin_Settings::get_option('woocommerce_checkout_pay_endpoint', 'order-pay' );
+	    $pay_page_url = wc_get_checkout_url() . $pay_param . '/order_id';
 
 		$this->form_fields = array(
 			'help_text_signup' => array(
@@ -196,13 +201,18 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 					'type' => 'title',
 					'id'   => 'wo-banana-crystal_help_ipn'
 			),
+			'help_text_order_pay' => array(
+				'title' => __('5. Copy and paste the url below to Order Pay URL <br><br><code>'.$pay_page_url.'</code>', 'wo-banana-crystal' ),
+				'type' => 'title',
+				'id'   => 'wo-banana-crystal_help_order_pay'
+			),
 			'help_text_subscription' => array(
-				'title' => __('5. Enable your subscription by clicking enable subscription checkbox', 'wo-banana-crystal' ),
+				'title' => __('6. Enable your subscription by clicking enable subscription checkbox', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_subscription'
 			),
 			'help_text_subscription_key' => array(
-				'title' => __('6. View your integration and copy the API key for the subscription key', 'wo-banana-crystal' ),
+				'title' => __('7. View your integration and copy the API key for the subscription key', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_subscription_key'
 			)
@@ -216,8 +226,8 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
         global $woocommerce;
         $order = new WC_Order( $order_id );
     
-        // Mark as on-hold (we're awaiting the cheque)
-        $order->update_status('on-hold', __( 'Awaiting payment confirmation', 'wo-banana-crystal' ));
+    	// Mark as pending payment (we're awaiting the confirmation)
+		$order->update_status('pending', __( 'Awaiting payment confirmation', 'wo-banana-crystal' ));
     
         // Remove cart
         $woocommerce->cart->empty_cart();
@@ -316,4 +326,27 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		}
 	}
 
+    public function order_pay_subtitle_oval(){
+		$order_id = wc_get_order_id_by_order_key($_GET['key']);
+		$order    = wc_get_order( $order_id );
+		$store_user_name = $this->get_option( 'store_username' );
+		//get only key from prefix
+			$order_key = str_replace('wc_order_', '', $order->order_key);
+			$order_id = $order->get_id();
+			//append items in notes
+			$notes = '';
+			// Get and Loop Over Order Items
+			foreach ( $order->get_items() as $item_id => $item ) {
+				$product_name = $item->get_name();
+				$quantity = $item->get_quantity();
+				$notes .= $product_name.' x '.$quantity.'\n';
+			}
+			
+			//redirect user to store banana crystal payment page
+			$params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='. base64_encode($order_key);
+			echo '<p class="payment-pending-text">Thank you. Your order is pending payment. Please click below to pay for the order <br/> <a href="https://app.bananacrystal.com/payme/'.$store_user_name.$params.'" style="
+			display: block;
+			width: 230px;
+		" class="button wp-element-button">Click here to Pay</a></p><br/><br/>';
+	}
 }
