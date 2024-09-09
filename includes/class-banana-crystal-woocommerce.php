@@ -129,7 +129,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 
 		$this->form_fields = array(
 			'help_text_signup' => array(
-				'title' => __('<a href="'.$sign_up_url.'" target="_blank">Sign up</a> to start accetping payments with BananaCrystal', 'wo-banana-crystal' ),
+				'title' => __('<a href="'.$sign_up_url.'" target="_blank">Sign up</a> to start accepting payments with BananaCrystal', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_text_signup'
 			),
