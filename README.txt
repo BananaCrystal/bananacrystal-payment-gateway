@@ -16,6 +16,13 @@ BananaCrystal Payment Gateway plugin allows you to accept payments for your stor
 
 ![BananaCrystal Payment Gateway Plugin](https://media.bananacrystal.com/wp-content/uploads/2020/12/30060859/cropped-bananacrystal-logo-400x100-1-1.png "BananaCrystal Logo")
 
+## WHAT'S NEW
+
+* Enhanced Payment Speed: Faster payment reflection for an improved checkout experience.
+* Bug Fixes: Resolved various issues to enhance reliability and performance.
+* User Interface Overhaul: A streamlined and intuitive interface for smoother navigation and ease of use.
+* Improved User Experience: Optimized workflows and enhanced features for better user satisfaction.
+
 ## BENEFITS
 
 ### Benefits for your store or business:
@@ -36,7 +43,7 @@ BananaCrystal Payment Gateway plugin allows you to accept payments for your stor
 
 ## FEATURES
 
-* Quick installation and setup, see [guide](https://support.bananacrystal.com/hc/en-us/articles/10231530050327).
+* Quick installation and setup, see [guide](https://www.bananacrystal.com/docs/how-to-install-the-wordpress-woocommerce-plugin/).
 * Accept one-time payments or through subscriptions
 * Receive Instant Payment Notifications when a customer makes a payment or recurring payment for a subscription.
 * Quick configuration with your BananaCrystal store account and your Woocommerce store
@@ -73,7 +80,7 @@ Follow the [Wordpress guidelines on how to install a plugin](https://wordpress.o
 
 Then navigate to the plugin's admin settings and enter your BananaCrystal store username, redirect url, order pay url, and payment notification webhook url.
 
-For a detailed guide, see [How to Install the BananaCrystal Payment Gateway Plugin](https://support.bananacrystal.com/hc/en-us/articles/10231530050327)
+For a detailed guide, see [How to Install the BananaCrystal Payment Gateway Plugin](https://www.bananacrystal.com/docs/how-to-install-the-wordpress-woocommerce-plugin/)
 
 
 = Where do I get my store username? =
