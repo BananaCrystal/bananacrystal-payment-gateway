@@ -38,7 +38,7 @@
 							<tr valign="top">
                                 <th scope="row">Recurring Amount:</th>
                                 <td>
-                                    <input type="text" name="plan_recurring_amount" min="10" required
+                                    <input type="text" name="plan_recurring_amount" min="0" required
                                            value="<?php echo $plan_row ? number_format($plan_row->subscription_plan_amount, 2) : ''; ?>"/>
                                 </td>
                             </tr>

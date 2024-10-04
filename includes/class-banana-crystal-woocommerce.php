@@ -249,9 +249,11 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
            $notes .= $product_name.' x '.$quantity.'\n';
         }
                 
-        
+        // Get store's currency
+    	$currency = get_woocommerce_currency();
+
         //redirect user to store banana crystal payment page
-        $params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='. base64_encode($order_key);
+        $params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='.'&currency='.$currency.'&sd='. base64_encode($order_key);
         $store_user_name = $this->get_option( 'store_username' );
         $redirect_url = 'https://app.bananacrystal.com/payme/'.$store_user_name.$params;
     
@@ -321,8 +323,12 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			$result = $wpdb->get_row("SELECT * FROM $table_name");
 			if ($result) {
 				$user = wp_get_current_user();
+
+				// get store currency
+				$currency = get_woocommerce_currency();
+
 				//redirect user to store banana crystal payment page
-				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&subscriber_user_id='.base64_encode($user->ID).'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.base64_encode($user->user_login);
+				$params = '?amount='.$result->subscription_plan_amount.'&note='.$result->subscription_plan_title.'&currency='.$currency.'&subscriber_user_id='.base64_encode($user->ID).'&sd=&subscription_id='.$result->subscription_plan_id.'&subscriber_username='.base64_encode($user->user_login);
 				$store_user_name = $this->get_option( 'store_username' );
 				$redirect_url = 'https://app.bananacrystal.com/pay_subscriptions/'.$store_user_name.$params;
 				wp_redirect( $redirect_url );
