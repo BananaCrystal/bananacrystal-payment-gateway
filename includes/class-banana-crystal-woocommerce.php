@@ -253,7 +253,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
     	$currency = get_woocommerce_currency();
 
         //redirect user to store banana crystal payment page
-        $params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='.'&currency='.$currency.'&sd='. base64_encode($order_key);
+        $params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&currency='.$currency.'&sd='. base64_encode($order_key);
         $store_user_name = $this->get_option( 'store_username' );
         $redirect_url = 'https://app.bananacrystal.com/payme/'.$store_user_name.$params;
     
