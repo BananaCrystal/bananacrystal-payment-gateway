@@ -191,7 +191,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_text'
 			),
-			'help_text_title_add_integration' => array(
+			'help_text' => array(
 				'title' => __('3. Ensure that the BananaCrystal Store Username entered is the same as the one used when you created the Store.<br><br>You can update the store username from you Store > Settings', 'wo-banana-crystal' ),
 				'type' => 'title',
 				'id'   => 'wo-banana-crystal_help_text'
