@@ -38,12 +38,15 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		// Save settings
 		if ( is_admin() ) {
 			add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 		} else {
 		    add_action( 'woocommerce_api_'.$this->id, array( $this, 'process_ipn_response' ) );
 			add_filter( 'woocommerce_gateway_title', array( $this,'change_payment_gateway_title'), 25, 2);
 			add_action( 'wp_loaded', array( $this, 'process_subscription' ) );
 			add_action( 'before_woocommerce_pay', array( $this, 'order_pay_subtitle_oval') );
-		}			
+		}
+		// AI Agent mode return handler (distinct wc-api endpoint from the legacy IPN).
+		add_action( 'woocommerce_api_' . BC_PAY_GATEWAY_ID . '_return', array( $this, 'handle_agent_return' ) );
 	} // Here is the  End __construct()
 
 
@@ -127,107 +130,112 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		$pay_param = WC_Admin_Settings::get_option('woocommerce_checkout_pay_endpoint', 'order-pay' );
 	    $pay_page_url = wc_get_checkout_url() . $pay_param . '/order_id';
 
+		// Instructions live in the field descriptions (not "title" fields), because
+		// a WooCommerce "title" field breaks the settings table and can't be shown
+		// or hidden per mode. The admin script toggles the field rows by mode.
+		$agent_help = '<strong>Set up &mdash; AI Agent site</strong><br>'
+			. '1. In BananaCrystal, go to Stores &rarr; your store &rarr; Integrations, and add a WooCommerce integration.<br>'
+			. '2. Copy the publishable key (starts with <code>pk_live_</code>) and paste it in Publishable key above.<br>'
+			. '3. If a secret key (<code>sk_live_</code>) is shown, paste it in Secret key below. Leave it blank if there is not one yet.<br>'
+			. '4. Save. Shoppers pay on a BananaCrystal page and return here, and the order is marked paid automatically.';
+
+		$legacy_help = '<strong>Set up &mdash; Legacy site</strong><br>'
+			. '1. Enter your BananaCrystal Store Username above.<br>'
+			. '2. In BananaCrystal, paste these into your store settings:<br>'
+			. '&nbsp;&nbsp;&bull; Order Completion / Thank You URL: <code>' . esc_html( $thankyou_page_url ) . '</code><br>'
+			. '&nbsp;&nbsp;&bull; Order Pay URL: <code>' . esc_html( $pay_page_url ) . '</code><br>'
+			. '&nbsp;&nbsp;&bull; Payment Notification (IPN) URL: <code>' . esc_html( $ipn_notification_url ) . '</code><br>'
+			. '3. Save.';
+
 		$this->form_fields = array(
 			'help_text_signup' => array(
-				'title' => __('<a href="'.$sign_up_url.'" target="_blank">Sign up</a> to start accepting payments with BananaCrystal', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text_signup'
-			),
-			'help_text_heading1' => array(
-				'title' => __('<u>Woocommerce Settings</u>', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
+				'title' => __( '<a href="' . $sign_up_url . '" target="_blank">Sign up</a> to start accepting payments with BananaCrystal', 'wo-banana-crystal' ),
+				'type'  => 'title',
 			),
 			'enabled' => array(
-				'title'		=> __( 'Enable / Disable', 'wo-banana-crystal' ),
-				'label'		=> __( 'Enable this payment gateway', 'wo-banana-crystal' ),
-				'type'		=> 'checkbox',
-				'default'	=> 'no',
+				'title'   => __( 'Enable / Disable', 'wo-banana-crystal' ),
+				'label'   => __( 'Enable this payment gateway', 'wo-banana-crystal' ),
+				'type'    => 'checkbox',
+				'default' => 'no',
+			),
+			'mode' => array(
+				'title'       => __( 'Mode', 'wo-banana-crystal' ),
+				'type'        => 'select',
+				'options'     => array(
+					'agent'  => __( 'AI Agent site', 'wo-banana-crystal' ),
+					'legacy' => __( 'Legacy site', 'wo-banana-crystal' ),
+				),
+				'default'     => 'agent',
+				'description' => __( 'Choose AI Agent if you use the new BananaCrystal at agents.bananacrystal.com. Choose Legacy if you use the older app.bananacrystal.com.', 'wo-banana-crystal' ),
 			),
 			'title' => array(
-				'title'		=> __( 'Title', 'wo-banana-crystal' ),
-				'type'		=> 'text',
-				'desc_tip'	=> __( 'This is the title that the user sees during the checkout process.', 'wo-banana-crystal' ),
-				'default'	=> __( 'Pay with ', 'wo-banana-crystal' ),
+				'title'    => __( 'Title', 'wo-banana-crystal' ),
+				'type'     => 'text',
+				'desc_tip' => __( 'The title shoppers see at checkout.', 'wo-banana-crystal' ),
+				'default'  => __( 'Pay with BananaCrystal', 'wo-banana-crystal' ),
 			),
 			'description' => array(
-				'title'		=> __( 'Description', 'wo-banana-crystal' ),
-				'type'		=> 'textarea',
-				'desc_tip'	=> __( 'This is the description that the user sees during the checkout process.', 'wo-banana-crystal' ),
-				'default'	=> __( 'Secure, Instant, Peer-To-Peer Payments', 'wo-banana-crystal' ),
-				'css'		=> 'max-width:450px;'
+				'title'    => __( 'Description', 'wo-banana-crystal' ),
+				'type'     => 'textarea',
+				'desc_tip' => __( 'The description shoppers see at checkout.', 'wo-banana-crystal' ),
+				'default'  => __( 'Pay securely with BananaCrystal. You will be redirected to complete your payment.', 'wo-banana-crystal' ),
+				'css'      => 'max-width:450px;',
 			),
-			'store_username' => array(
-				'title'		=> __( 'BananaCrystal Store Username', 'wo-banana-crystal' ),
-				'type'		=> 'text',
-				'desc_tip'	=> __( 'This is your BananaCrystal store username.', 'wo-banana-crystal' ),
 
+			// --- AI Agent site fields (toggled by the mode dropdown) ---
+			'publishable_key' => array(
+				'title'       => __( 'Publishable key', 'wo-banana-crystal' ),
+				'type'        => 'text',
+				'placeholder' => 'pk_live_…',
+				'description' => $agent_help,
+			),
+			'secret_key' => array(
+				'title'       => __( 'Secret key', 'wo-banana-crystal' ),
+				'type'        => 'password',
+				'placeholder' => 'sk_live_…',
+				'description' => __( 'Used to verify payment notifications. Leave blank if BananaCrystal has not shown one.', 'wo-banana-crystal' ),
+			),
+
+			// --- Legacy site fields (toggled by the mode dropdown) ---
+			'store_username' => array(
+				'title'       => __( 'BananaCrystal Store Username', 'wo-banana-crystal' ),
+				'type'        => 'text',
+				'description' => $legacy_help,
 			),
 			'subscriptions_enabled' => array(
-				'title'		=> __( 'Enable / Disable Subscriptions', 'wo-banana-crystal' ),
-				'label'		=> __( 'Enable subscriptions for this payment gateway', 'wo-banana-crystal' ),
-				'type'		=> 'checkbox',
-				'default'	=> 'no',
+				'title'   => __( 'Enable / Disable Subscriptions', 'wo-banana-crystal' ),
+				'label'   => __( 'Enable subscriptions for this payment gateway', 'wo-banana-crystal' ),
+				'type'    => 'checkbox',
+				'default' => 'no',
 			),
 			'subscription_key' => array(
-				'title'		=> __( 'Subscription Key', 'wo-banana-crystal' ),
-				'type'		=> 'password',
-				'desc_tip'	=> __( 'This is your BananaCrystal subscription key.', 'wo-banana-crystal' ),
-
+				'title'    => __( 'Subscription Key', 'wo-banana-crystal' ),
+				'type'     => 'password',
+				'desc_tip' => __( 'Your BananaCrystal subscription key.', 'wo-banana-crystal' ),
 			),
-			'help_text_heading_bc' => array(
-				'title' => __('<u>BananaCrystal Settings</u>', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
-			),
-
-			'help_text_title' => array(
-				'title' => __('1. Go to your Store > <a href="'.$setting_page_url.'" target="_blank">Integrations</a> on BananaCrystal', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
-			),
-			'help_text_title_add_integration' => array(
-				'title' => __('2. Add a Woocommerce Integration', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
-			),
-			'help_text' => array(
-				'title' => __('3. Ensure that the BananaCrystal Store Username entered is the same as the one used when you created the Store.<br><br>You can update the store username from you Store > Settings', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
-			),
-			'help_text' => array(
-				'title' => __('4. Copy and paste the url below to the Order Completion or Thank You Page URL setting<br><br><code>'.$thankyou_page_url.'</code>', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_text'
-			),
-			'help_text_order_pay' => array(
-				'title' => __('5. Copy and paste the url below to Order Pay URL <br><br><code>'.$pay_page_url.'</code>', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_order_pay'
-			),
-			'help_text_ipn' => array(
-					'title' => __('6. Copy and paste the url below to Payment Notifications URL <br><br><code>'.$ipn_notification_url.'</code>', 'wo-banana-crystal' ),
-					'type' => 'title',
-					'id'   => 'wo-banana-crystal_help_ipn'
-			),
-			'help_text_subscription' => array(
-				'title' => __('7. Enable your subscription by clicking enable subscription checkbox', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_subscription'
-			),
-			'help_text_subscription_key' => array(
-				'title' => __('8. View your integration and copy the API key for the subscription key', 'wo-banana-crystal' ),
-				'type' => 'title',
-				'id'   => 'wo-banana-crystal_help_subscription_key'
-			)
 		);
+	}
 
+	/** Which flow this store uses: 'agent' (Stores) or 'legacy' (old app). */
+	public function get_mode() {
+		$mode = $this->get_option( 'mode', 'agent' );
+		return in_array( $mode, array( 'agent', 'legacy' ), true ) ? $mode : 'agent';
+	}
 
+	public function get_publishable_key() {
+		return trim( (string) $this->get_option( 'publishable_key' ) );
+	}
+
+	public function get_secret_key() {
+		return trim( (string) $this->get_option( 'secret_key' ) );
 	}
 
 	// Response handled for payment gateway
 	public function process_payment( $order_id ) {
+        // AI Agent mode uses the hosted Stores checkout; legacy keeps the flow below.
+        if ( 'agent' === $this->get_mode() ) {
+            return $this->process_payment_agent( $order_id );
+        }
         global $woocommerce;
         $order = new WC_Order( $order_id );
     
@@ -263,10 +271,118 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
             'redirect' => $redirect_url
         );
 	}
-	
+
+	/**
+	 * AI Agent flow: create a hosted Stores checkout session and redirect the
+	 * buyer to it. The order stays pending until confirmed on return (or, later,
+	 * by the settlement webhook / the poller).
+	 */
+	private function process_payment_agent( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return array( 'result' => 'failure' );
+		}
+		$pk = $this->get_publishable_key();
+		if ( ! $pk ) {
+			wc_add_notice( __( 'BananaCrystal is not configured. Please contact the store.', 'wo-banana-crystal' ), 'error' );
+			return array( 'result' => 'failure' );
+		}
+
+		$client  = new BC_API_Client( $pk );
+		$session = $client->create_session(
+			array(
+				'amount'      => (string) $order->get_total(),
+				'currency'    => $order->get_currency(),
+				'order_id'    => (string) $order->get_id(),
+				'description' => sprintf(
+					/* translators: 1: order number, 2: store name */
+					__( 'Order #%1$s — %2$s', 'wo-banana-crystal' ),
+					$order->get_order_number(),
+					get_bloginfo( 'name' )
+				),
+				'return_url'  => $this->agent_return_url( $order ),
+				'reference'   => 'wc_' . $order->get_id(),
+				'origin'      => home_url( '/' ),
+			)
+		);
+
+		if ( empty( $session['ok'] ) ) {
+			$order->add_order_note( 'BananaCrystal session failed: ' . ( $session['error'] ?? 'unknown' ) );
+			wc_add_notice( __( 'Could not start the BananaCrystal payment. Please try again.', 'wo-banana-crystal' ), 'error' );
+			return array( 'result' => 'failure' );
+		}
+
+		if ( ! empty( $session['session_id'] ) ) {
+			$order->update_meta_data( '_bc_session_id', $session['session_id'] );
+		}
+		$order->update_status( 'pending', __( 'Awaiting BananaCrystal payment.', 'wo-banana-crystal' ) );
+		$order->save();
+
+		return array( 'result' => 'success', 'redirect' => $session['checkout_url'] );
+	}
+
+	/** Where the buyer is sent back to after the hosted checkout (agent mode). */
+	private function agent_return_url( $order ) {
+		return add_query_arg(
+			array(
+				'wc-api'   => BC_PAY_GATEWAY_ID . '_return',
+				'order_id' => $order->get_id(),
+				'key'      => $order->get_order_key(),
+			),
+			home_url( '/' )
+		);
+	}
+
+	/**
+	 * Buyer is back from the hosted checkout. Confirm once by polling status and
+	 * complete the order if it settled; otherwise leave it pending (the poller
+	 * finishes it) and send them to the order-received page either way.
+	 */
+	public function handle_agent_return() {
+		$order_id = isset( $_GET['order_id'] ) ? absint( wp_unslash( $_GET['order_id'] ) ) : 0;
+		$key      = isset( $_GET['key'] ) ? sanitize_text_field( wp_unslash( $_GET['key'] ) ) : '';
+		$order    = $order_id ? wc_get_order( $order_id ) : false;
+
+		if ( ! $order || ! hash_equals( $order->get_order_key(), $key ) ) {
+			wp_safe_redirect( wc_get_page_permalink( 'shop' ) );
+			exit;
+		}
+
+		if ( ! $order->is_paid() ) {
+			$client     = new BC_API_Client( $this->get_publishable_key() );
+			$session_id = (string) $order->get_meta( '_bc_session_id' );
+			$status     = $session_id
+				? $client->get_session_status( $session_id )
+				: $client->get_order_status( (string) $order->get_id() );
+			$s = (string) ( $status['status'] ?? '' );
+			if ( ! empty( $status['ok'] ) && BC_API_Client::is_paid( $s ) ) {
+				BC_Order::mark_paid( $order, (string) ( $status['transaction_id'] ?? '' ), 'return' );
+			} elseif ( ! empty( $status['ok'] ) && BC_API_Client::is_failed( $s ) ) {
+				$order->update_status( 'failed', __( 'BananaCrystal payment failed.', 'wo-banana-crystal' ) );
+			}
+		}
+
+		wp_safe_redirect( $this->get_return_url( $order ) );
+		exit;
+	}
+
+	/** Enqueue the admin script that shows the fields for the selected mode. */
+	public function enqueue_admin_assets( $hook ) {
+		if ( 'woocommerce_page_wc-settings' !== $hook ) {
+			return;
+		}
+		wp_enqueue_script(
+			'bc-admin-mode',
+			BC_PAY_URL . 'assets/js/admin.js',
+			array( 'jquery' ),
+			BC_PAY_VERSION,
+			true
+		);
+	}
+
 	/**
 	 * Valudate fields
-	 * 
+	 *
 	 * @return (bool)
 	 **/
 	public function validate_fields() {
