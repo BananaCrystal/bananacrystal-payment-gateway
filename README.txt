@@ -2,9 +2,10 @@
 Contributors: bananacrystal
 Donate link: https://www.bananacrystal.com/
 Tags: payments, bananacrystal, woocommerce, payment gateway
-Requires at least: 5.0
-Tested up to: 6.6.1
-Stable tag: 1.2.6
+Requires at least: 6.2
+Requires PHP: 7.4
+Tested up to: 6.7
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -125,3 +126,13 @@ If you need help regarding a transaction, visit the [BananaCrystal Support Cente
 5. Customer Checkout.
 6. Customer Payment Page.
 7. Customer Subscription Payment Page.
+
+== Changelog ==
+
+= 1.3.0 =
+* Added an AI Agent mode for stores on the new BananaCrystal (agents.bananacrystal.com), alongside the existing Legacy mode. Pick your mode in the gateway settings.
+* AI Agent mode: shoppers pay on a hosted BananaCrystal page and return to your store; the order is confirmed automatically.
+* Added Cart/Checkout Blocks support and declared High-Performance Order Storage (HPOS) compatibility.
+
+= 1.2.6 =
+* Bug fixes and checkout improvements.
