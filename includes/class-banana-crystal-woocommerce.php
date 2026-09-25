@@ -136,8 +136,7 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		$agent_help = '<strong>Set up &mdash; AI Agent site</strong><br>'
 			. '1. In BananaCrystal, go to Stores &rarr; your store &rarr; Integrations, and add a WooCommerce integration.<br>'
 			. '2. Copy the publishable key (starts with <code>pk_live_</code>) and paste it in Publishable key above.<br>'
-			. '3. If a secret key (<code>sk_live_</code>) is shown, paste it in Secret key below. Leave it blank if there is not one yet.<br>'
-			. '4. Save. Shoppers pay on a BananaCrystal page and return here, and the order is marked paid automatically.';
+			. '3. Save. Shoppers pay on a BananaCrystal page and return here, and the order is marked paid automatically.';
 
 		$legacy_help = '<strong>Set up &mdash; Legacy site</strong><br>'
 			. '1. Enter your BananaCrystal Store Username above.<br>'
@@ -189,12 +188,9 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'placeholder' => 'pk_live_…',
 				'description' => $agent_help,
 			),
-			'secret_key' => array(
-				'title'       => __( 'Secret key', 'wo-banana-crystal' ),
-				'type'        => 'password',
-				'placeholder' => 'sk_live_…',
-				'description' => __( 'Used to verify payment notifications. Leave blank if BananaCrystal has not shown one.', 'wo-banana-crystal' ),
-			),
+			// Secret key (for the signed settlement webhook) is intentionally not
+			// shown yet: BananaCrystal does not issue one until that webhook ships.
+			// The receiver in BC_Webhook stays wired for when it does.
 
 			// --- Legacy site fields (toggled by the mode dropdown) ---
 			'store_username' => array(

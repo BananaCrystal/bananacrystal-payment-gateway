@@ -5,7 +5,7 @@
  */
 ( function ( $ ) {
 	var PREFIX = '#woocommerce_wo_banana_crystal_';
-	var AGENT = [ 'publishable_key', 'secret_key' ];
+	var AGENT = [ 'publishable_key' ];
 	var LEGACY = [ 'store_username', 'subscriptions_enabled', 'subscription_key' ];
 
 	function rowsFor( keys ) {
