@@ -15,7 +15,7 @@
  * @wordpress-plugin
  * Plugin Name:       BananaCrystal Payment Gateway
  * Description:       Fast secure, low-cost, borderless, local and international payments in USD powered by blockchain/crypto payment rails. Send and receive secure peer to peer payments to anyone instantly at no cost to you.
- * Version:           1.2.6
+ * Version:           1.3.0
  * Author:            Banana Crystal
  * Author URI:        https://www.bananacrystal.com/
  * License:           GPL-2.0+
@@ -34,7 +34,43 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'WOOCOMMERCE_GATEWAY_BANANA_CRYSTAL_VERSION', '1.2.6' );
+define( 'WOOCOMMERCE_GATEWAY_BANANA_CRYSTAL_VERSION', '1.3.0' );
+
+/**
+ * Shared constants for the AI Agent mode (the new Stores / agent-wallet flow).
+ * The gateway id stays 'wo_banana_crystal' so this is one plugin, one listing,
+ * with a mode switch — not a separate plugin.
+ */
+define( 'BC_PAY_GATEWAY_ID', 'wo_banana_crystal' );
+define( 'BC_PAY_PATH', plugin_dir_path( __FILE__ ) );
+define( 'BC_PAY_URL', plugin_dir_url( __FILE__ ) );
+define( 'BC_PAY_VERSION', WOOCOMMERCE_GATEWAY_BANANA_CRYSTAL_VERSION );
+
+/**
+ * Base URL for the pay-widget API (lp-api) used by AI Agent mode. Filterable so
+ * staging/local can point elsewhere. Paths are under /api/v1/widget/v1/*.
+ *   prod    = https://agentic.bananacrystal.com
+ *   staging = https://agentic.stg.bananacrystal.com
+ */
+if ( ! defined( 'BC_PAY_API_BASE' ) ) {
+	define( 'BC_PAY_API_BASE', 'https://agentic.bananacrystal.com' );
+}
+
+/**
+ * Declare compatibility with WooCommerce High-Performance Order Storage (HPOS)
+ * and the Cart/Checkout Blocks, so the gateway isn't flagged incompatible and
+ * shows on block checkout (which the classic-only v1 never did).
+ */
+add_action(
+	'before_woocommerce_init',
+	static function () {
+		if ( ! class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			return;
+		}
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+	}
+);
 
 /**
  * The code that runs during plugin activation.
@@ -87,7 +123,43 @@ function wo_banana_crystal_init() {
   //subscriptions
   require_once( plugin_dir_path( __FILE__ ) . 'includes/class-banana-crystal-subscription.php' );
   $banana_crystal_subscription = new Banana_Crystal_Subscription();
+
+  // AI Agent mode: the Stores / agent-wallet flow. These classes are inert
+  // unless the gateway's mode is set to 'agent' (each one checks).
+  require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-api-client.php' );
+  require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-order.php' );
+  require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-webhook.php' );
+  require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-poller.php' );
+  ( new BC_Webhook() )->register();
+  ( new BC_Poller() )->register();
 }
+
+// Register the gateway on the Cart/Checkout Blocks (both modes redirect, so the
+// block method works for legacy and agent alike).
+add_action(
+  'woocommerce_blocks_loaded',
+  static function () {
+    if ( ! class_exists( \Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType::class ) ) {
+      return;
+    }
+    require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-blocks.php' );
+    add_action(
+      'woocommerce_blocks_payment_method_type_registration',
+      static function ( $registry ) {
+        $registry->register( new BC_Blocks_Support() );
+      }
+    );
+  }
+);
+
+// Stop the agent-mode reconciliation poll when the plugin is deactivated.
+register_deactivation_hook(
+  __FILE__,
+  static function () {
+    require_once( plugin_dir_path( __FILE__ ) . 'includes/class-bc-poller.php' );
+    BC_Poller::unschedule();
+  }
+);
 
 // Add custom action links
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wo_banana_crystal_action_links' );

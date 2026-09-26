@@ -2,13 +2,14 @@
 Contributors: bananacrystal
 Donate link: https://www.bananacrystal.com/
 Tags: payments, bananacrystal, woocommerce, payment gateway
-Requires at least: 5.0
-Tested up to: 6.6.1
-Stable tag: 1.2.6
+Requires at least: 6.2
+Requires PHP: 7.4
+Tested up to: 7.1
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-BananaCrystal Payment Gateway plugin allows you to accept payments for your store or business almost free on your Wordpress Woocommerce store easily.
+Accept WooCommerce payments with BananaCrystal — now with AI Agent mode for the new BananaCrystal platform, alongside the classic setup.
 
 == Description ==
 
@@ -16,12 +17,13 @@ BananaCrystal Payment Gateway plugin allows you to accept payments for your stor
 
 ![BananaCrystal Payment Gateway Plugin](https://media.bananacrystal.com/wp-content/uploads/2020/12/30060859/cropped-bananacrystal-logo-400x100-1-1.png "BananaCrystal Logo")
 
+**Now with AI Agent mode.** Connect your WooCommerce store to the new BananaCrystal AI agent payment platform (agents.bananacrystal.com), so payments settle straight into your store's agent wallet. Shoppers pay on a hosted BananaCrystal page and return to your store, and the order is confirmed automatically.
+
 ## WHAT'S NEW
 
-* Enhanced Payment Speed: Faster payment reflection for an improved checkout experience.
-* Bug Fixes: Resolved various issues to enhance reliability and performance.
-* User Interface Overhaul: A streamlined and intuitive interface for smoother navigation and ease of use.
-* Improved User Experience: Optimized workflows and enhanced features for better user satisfaction.
+* **AI Agent mode:** connect a store on the new BananaCrystal (agents.bananacrystal.com). Shoppers pay on a hosted BananaCrystal page and return to your store, and the order is confirmed automatically. Pick your mode in the gateway settings; the existing (legacy) setup keeps working.
+* **Block checkout support:** the gateway now shows on the WooCommerce Checkout and Cart blocks, not just the classic checkout.
+* **Tested with the latest WooCommerce**, including High-Performance Order Storage (HPOS).
 
 ## BENEFITS
 
@@ -43,6 +45,8 @@ BananaCrystal Payment Gateway plugin allows you to accept payments for your stor
 
 ## FEATURES
 
+* AI Agent mode for the new BananaCrystal platform, with the classic (legacy) setup still supported.
+* Works on both the classic checkout and the new WooCommerce blocks.
 * Quick installation and setup, see [guide](https://www.bananacrystal.com/docs/how-to-install-the-wordpress-woocommerce-plugin/).
 * Accept one-time payments or through subscriptions
 * Receive Instant Payment Notifications when a customer makes a payment or recurring payment for a subscription.
@@ -125,3 +129,13 @@ If you need help regarding a transaction, visit the [BananaCrystal Support Cente
 5. Customer Checkout.
 6. Customer Payment Page.
 7. Customer Subscription Payment Page.
+
+== Changelog ==
+
+= 1.3.0 =
+* Added an AI Agent mode for stores on the new BananaCrystal (agents.bananacrystal.com), alongside the existing Legacy mode. Pick your mode in the gateway settings.
+* AI Agent mode: shoppers pay on a hosted BananaCrystal page and return to your store; the order is confirmed automatically.
+* Added Cart/Checkout Blocks support and declared High-Performance Order Storage (HPOS) compatibility.
+
+= 1.2.6 =
+* Bug fixes and checkout improvements.
