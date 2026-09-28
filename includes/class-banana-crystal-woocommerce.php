@@ -130,13 +130,25 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 		$pay_param = WC_Admin_Settings::get_option('woocommerce_checkout_pay_endpoint', 'order-pay' );
 	    $pay_page_url = wc_get_checkout_url() . $pay_param . '/order_id';
 
+		// AI Agent mode: the BananaCrystal WooCommerce integration form asks for the
+		// same three URLs, so the guide hands them over ready to paste. Notifications
+		// go to the agent webhook endpoint (distinct from the legacy IPN); the return
+		// handler is the fallback until the signed webhook (spec §4) ships.
+		$agent_thankyou_url = wc_get_checkout_url() . $order_param;
+		$agent_pay_url      = wc_get_checkout_url() . $pay_param;
+		$agent_webhook_url  = home_url( '/?wc-api=' . BC_PAY_GATEWAY_ID . '_webhook' );
+
 		// Instructions live in the field descriptions (not "title" fields), because
 		// a WooCommerce "title" field breaks the settings table and can't be shown
 		// or hidden per mode. The admin script toggles the field rows by mode.
 		$agent_help = '<strong>Set up &mdash; AI Agent site</strong><br>'
 			. '1. In BananaCrystal, go to Stores &rarr; your store &rarr; Integrations, and add a WooCommerce integration.<br>'
-			. '2. Copy the publishable key (starts with <code>pk_live_</code>) and paste it in Publishable key above.<br>'
-			. '3. Save. Shoppers pay on a BananaCrystal page and return here, and the order is marked paid automatically.';
+			. '2. In that integration, paste these URLs:<br>'
+			. '&nbsp;&nbsp;&bull; Order completion / thank-you URL: <code>' . esc_html( $agent_thankyou_url ) . '</code><br>'
+			. '&nbsp;&nbsp;&bull; Order pay / return URL: <code>' . esc_html( $agent_pay_url ) . '</code><br>'
+			. '&nbsp;&nbsp;&bull; Payment notifications URL: <code>' . esc_html( $agent_webhook_url ) . '</code><br>'
+			. '3. Copy the publishable key (starts with <code>pk_live_</code>) and paste it in Publishable key above.<br>'
+			. '4. Save. Shoppers pay on a BananaCrystal page and return here, and the order is marked paid automatically.';
 
 		$legacy_help = '<strong>Set up &mdash; Legacy site</strong><br>'
 			. '1. Enter your BananaCrystal Store Username above.<br>'
@@ -168,17 +180,19 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 				'description' => __( 'Choose AI Agent if you use the new BananaCrystal at agents.bananacrystal.com. Choose Legacy if you use the older app.bananacrystal.com.', 'wo-banana-crystal' ),
 			),
 			'title' => array(
-				'title'    => __( 'Title', 'wo-banana-crystal' ),
-				'type'     => 'text',
-				'desc_tip' => __( 'The title shoppers see at checkout.', 'wo-banana-crystal' ),
-				'default'  => __( 'Pay with BananaCrystal', 'wo-banana-crystal' ),
+				'title'       => __( 'Title', 'wo-banana-crystal' ),
+				'type'        => 'text',
+				'desc_tip'    => __( 'The title shoppers see at checkout.', 'wo-banana-crystal' ),
+				'default'     => __( 'Pay with BananaCrystal', 'wo-banana-crystal' ),
+				'placeholder' => __( 'e.g. Pay with BananaCrystal', 'wo-banana-crystal' ),
 			),
 			'description' => array(
-				'title'    => __( 'Description', 'wo-banana-crystal' ),
-				'type'     => 'textarea',
-				'desc_tip' => __( 'The description shoppers see at checkout.', 'wo-banana-crystal' ),
-				'default'  => __( 'Pay securely with BananaCrystal. You will be redirected to complete your payment.', 'wo-banana-crystal' ),
-				'css'      => 'max-width:450px;',
+				'title'       => __( 'Description', 'wo-banana-crystal' ),
+				'type'        => 'textarea',
+				'desc_tip'    => __( 'The description shoppers see at checkout.', 'wo-banana-crystal' ),
+				'default'     => __( "Pay securely with BananaCrystal. Pay in your local currency and we handle the conversion. You'll be redirected to complete your payment, then brought back to the store.", 'wo-banana-crystal' ),
+				'placeholder' => __( "e.g. Pay securely in your local currency. You'll be redirected to complete your payment.", 'wo-banana-crystal' ),
+				'css'         => 'max-width:450px;',
 			),
 
 			// --- AI Agent site fields (toggled by the mode dropdown) ---
