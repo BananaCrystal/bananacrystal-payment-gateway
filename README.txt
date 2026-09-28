@@ -5,7 +5,7 @@ Tags: payments, bananacrystal, woocommerce, payment gateway
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,14 @@ Accept WooCommerce payments with BananaCrystal — now with AI Agent mode for th
 * **AI Agent mode:** connect a store on the new BananaCrystal (agents.bananacrystal.com). Shoppers pay on a hosted BananaCrystal page and return to your store, and the order is confirmed automatically. Pick your mode in the gateway settings; the existing (legacy) setup keeps working.
 * **Block checkout support:** the gateway now shows on the WooCommerce Checkout and Cart blocks, not just the classic checkout.
 * **Tested with the latest WooCommerce**, including High-Performance Order Storage (HPOS).
+
+## AI Agent mode
+
+For stores on the new BananaCrystal (agents.bananacrystal.com). Add a WooCommerce integration, paste the order completion / thank-you, order pay / return, and payment notifications URLs shown in the gateway settings, then paste your publishable key (starts with pk_live_). Shoppers pay on a hosted BananaCrystal page and are returned to your store, and the order is marked paid automatically. Works on both the classic checkout and the WooCommerce Cart/Checkout blocks, with HPOS support.
+
+## Legacy mode
+
+Keeps the original setup for the older app.bananacrystal.com. Enter your BananaCrystal Store Username and paste the Order Completion / Thank You, Order Pay, and Payment Notification (IPN) URLs into your BananaCrystal store settings. Choose your mode in the gateway settings — the legacy setup keeps working exactly as before.
 
 ## BENEFITS
 
@@ -54,6 +62,25 @@ Accept WooCommerce payments with BananaCrystal — now with AI Agent mode for th
 
 
 == Frequently Asked Questions ==
+
+= What's the difference between AI Agent mode and Legacy mode? =
+
+AI Agent mode connects your store to the new BananaCrystal (agents.bananacrystal.com): shoppers pay on a hosted BananaCrystal page, return to your store, and the order is confirmed automatically. Legacy mode keeps the original setup for the older app.bananacrystal.com. Pick your mode in the gateway settings.
+
+= How do I set up AI Agent mode? =
+
+1. In BananaCrystal, go to Stores > your store > Integrations and add a WooCommerce integration.
+2. Paste the Order completion / thank-you, Order pay / return, and Payment notifications URLs shown in the gateway settings.
+3. Copy your publishable key (starts with pk_live_) into the Publishable key field.
+4. Save.
+
+= Where do I get my publishable key? =
+
+In BananaCrystal, open Stores > your store > Integrations > your WooCommerce integration. The publishable key starts with pk_live_.
+
+= Does AI Agent mode work with the WooCommerce block checkout? =
+
+Yes — the gateway shows on both the classic checkout and the WooCommerce Cart/Checkout blocks.
 
 = As a merchant, how do I start accepting payments using BananaCrystal? =
 
@@ -122,15 +149,19 @@ If you need help regarding a transaction, visit the [BananaCrystal Support Cente
 
 == Screenshots ==
 
-1. Admin Settings.
-2. Store Integration Settings on BananaCrystal.
-3. Admin Manage Subscriptions.
-4. Admin Subscriptions Transactions.
-5. Customer Checkout.
-6. Customer Payment Page.
-7. Customer Subscription Payment Page.
+1. AI Agent mode — create a WooCommerce integration in BananaCrystal.
+2. AI Agent mode — copy your publishable key.
+3. AI Agent mode — shoppers pay on the hosted BananaCrystal checkout.
+4. AI Agent mode — the order is confirmed automatically on return.
+5. Legacy mode — BananaCrystal at customer checkout.
+6. Legacy mode — the customer payment page.
 
 == Changelog ==
+
+= 1.3.1 =
+* AI Agent mode: the gateway settings now show the exact URLs to paste into your BananaCrystal WooCommerce integration (order completion / thank-you, order pay / return, payment notifications).
+* Clearer default payment title and description, with example placeholders in the settings.
+* Updated screenshots and FAQ for AI Agent mode.
 
 = 1.3.0 =
 * Added an AI Agent mode for stores on the new BananaCrystal (agents.bananacrystal.com), alongside the existing Legacy mode. Pick your mode in the gateway settings.
