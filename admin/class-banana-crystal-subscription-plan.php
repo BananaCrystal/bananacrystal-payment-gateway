@@ -110,6 +110,13 @@ class Banana_Crystal_Subscription_Plan {
     function handle_actions() {
         global $wpdb;
         //add new subscription plan
+        if (isset($_POST['add_btn']) || isset($_POST['update_btn'])) {
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have permission to do this.', 'wo-banana-crystal'), 403);
+            }
+            check_admin_referer('bc_subscription_plan_save', 'bc_subscription_plan_nonce');
+        }
+
         if (isset($_POST['add_btn'])) {
             $data = [
                 'subscription_plan_title' => sanitize_text_field($_POST['plan_title']),
@@ -140,6 +147,10 @@ class Banana_Crystal_Subscription_Plan {
 
         //delete subscription plan
         if (isset($_GET['del'])) {
+            if (!current_user_can('manage_options')) {
+                wp_die(__('You do not have permission to do this.', 'wo-banana-crystal'), 403);
+            }
+            check_admin_referer('bc_subscription_plan_delete');
             $del_id = (int)sanitize_text_field($_GET['del']);
             $wpdb->update($this->table_name, ['deleted_at' => date('Y-m-d H:i:s')], ['subscription_plan_id' => $del_id]);
  

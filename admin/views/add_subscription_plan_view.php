@@ -19,6 +19,7 @@
             <p>Update subscription plans to be used with BananaCrystal payment gateway. All fields are manadatory.</p>
         <?php } ?>
             <form method="post" action="">
+            <?php wp_nonce_field( 'bc_subscription_plan_save', 'bc_subscription_plan_nonce' ); ?>
                         <table class="form-table">
                             <tr valign="top">
                                 <th scope="row">Title:</th>
@@ -62,7 +63,7 @@
                         <?php if(!isset($_GET['upt'])){ ?>
                             <input type="submit" class="button-primary" name="add_btn" value="<?php _e( 'Create' ) ?>"/>
                         <?php } else { ?>
-                            <input type="hidden" value="<?php echo $plan_row ? $plan_row->subscription_plan_id : ''; ?>"  name="plan_id"/>
+                            <input type="hidden" value="<?php echo $plan_row ? esc_attr($plan_row->subscription_plan_id) : ''; ?>"  name="plan_id"/>
                             <input type="submit" class="button-primary" name="update_btn" value="<?php _e( 'Update' ) ?>"/>
                         <?php } ?>
                         </p>
