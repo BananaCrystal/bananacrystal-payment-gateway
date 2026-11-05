@@ -57,7 +57,7 @@
     global $wpdb;
     $user_id = get_current_user_id();
     $table_name = $wpdb->prefix . 'banana_crystal_subscriptions';
-    $plan = $wpdb->get_row("SELECT * FROM ".$table_name." WHERE user_id=".$user_id." AND subscription_status='ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1");
+    $plan = $wpdb->get_row($wpdb->prepare("SELECT * FROM ".$table_name." WHERE user_id = %d AND subscription_status='ACTIVE' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1", $user_id));
     if ($plan) { ?>
 
                     <div class="product_pack_item ">

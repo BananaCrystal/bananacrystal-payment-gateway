@@ -33,7 +33,7 @@ function banana_crystal_format_date($date, $format = 'M/d/Y h:i a') {
 function get_banana_crystal_subscription_plan($plan_id) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'banana_crystal_subscription_plans';
-    $result = $wpdb->get_row("SELECT * FROM $table_name  WHERE deleted_at IS NULL AND subscription_plan_id=".$plan_id);
+    $result = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE deleted_at IS NULL AND subscription_plan_id = %d", absint($plan_id)));
     return $result;
 }
 

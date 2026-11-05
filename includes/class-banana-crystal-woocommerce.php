@@ -56,56 +56,171 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 	 * @return (object)json
 	 * */
 	public function process_ipn_response() {
-		global $woocommerce;
-		global $wpdb;
-		$data = file_get_contents("php://input", false, stream_context_get_default(), 0, $_SERVER["CONTENT_LENGTH"]);
-	  $data = json_decode( $data);
+		$raw  = file_get_contents( 'php://input' );
+		$data = json_decode( (string) $raw );
 
-		// VERIFY DATA
-		//check if request is from Banana Crystal
-		$data->cmd = "notify-validate";
-		$verifyResponse = $this->verifyPayload($data);
-
-		// LOAD THE WC LOGGER
-		$logger = wc_get_logger();
-
-		// LOG THE IPN ORDER TO CUSTOM "banana-crystal" LOG
-		$logger->info( wc_print_r( $verifyResponse , true ), array( 'source' => 'banana-crystal' ) );
-
-		$response = ['success' => false];
-		
-		if ($data->payment_status == 'completed') {
-			//execute subscription flow
-			if (isset($data->subscription_plan_id)) {
-				$plan = get_banana_crystal_subscription_plan($data->subscription_plan_id);
-			    //create subscription
-			    $subscription_data = [
-			        'subscription_plan_id' => $plan->subscription_plan_id,
-		    	    'user_id' => $data->subscriber_user_id,
-		        	'subscription_title' => $plan->subscription_plan_title,
-		        	'subscription_occurrence' => $plan->subscription_plan_occurrence,
-		        	'subscription_amount' => $plan->subscription_plan_amount,
-		        	'buyer_user_name' => $data->payer_username,
-		        	'payload' => json_encode($data),
-		        	'subscription_status' => 'ACTIVE',
-		        	'created_at' => date('Y-m-d H:i:s'),
-		        	'expired_at' => get_banana_crystal_expiry_date_by_occurence($plan->subscription_plan_occurrence)
-		    	];
-		    	$wpdb->insert($wpdb->prefix.'banana_crystal_subscriptions', $subscription_data);
-			} else { //execute one time payment flow
-				$order = new WC_Order( $data->order_id );
-				$order->payment_complete();
-				//ADD FILTER FOR SUCCESS TRANSACTION
-				apply_filters( 'wo_banana_crystal_payment_success', ['order' => $order]);
-			}
-		  $response['success'] = true;
-
-		} else if ($data->payment_status == 'failed') {
-		  $order = new WC_Order( $data->order_id );
-		  $order->update_status('failed', __( 'Payment status failed', 'wo-banana-crystal' ));
+		if ( ! is_object( $data ) || ! isset( $data->payment_status ) ) {
+			$this->ipn_reply( 400, 'invalid payload' );
 		}
 
-		echo json_encode($response);
+		$status = sanitize_text_field( (string) $data->payment_status );
+		if ( ! in_array( $status, array( 'completed', 'failed' ), true ) ) {
+			$this->ipn_reply( 200, 'ignored status' );
+		}
+
+		$logger          = wc_get_logger();
+		$is_subscription = isset( $data->subscription_plan_id ) && '' !== (string) $data->subscription_plan_id;
+
+		// The notification is only trusted once BananaCrystal confirms it. Anything other
+		// than an explicit VERIFIED (network error, INVALID, unexpected body) is rejected.
+		if ( ! $this->is_ipn_verified( $data, $is_subscription ) ) {
+			$logger->warning( 'Rejected unverified IPN for order ' . sanitize_text_field( (string) ( isset( $data->order_id ) ? $data->order_id : '' ) ), array( 'source' => 'banana-crystal' ) );
+			$this->ipn_reply( 403, 'not verified' );
+		}
+
+		if ( $is_subscription ) {
+			$this->handle_verified_subscription_ipn( $data, $status, $logger );
+		} else {
+			$this->handle_verified_order_ipn( $data, $status, $logger );
+		}
+	}
+
+	/**
+	 * Ask BananaCrystal whether this notification is genuine.
+	 *
+	 * @return bool true only when the verify endpoint answers exactly "VERIFIED".
+	 */
+	private function is_ipn_verified( $data, $is_subscription ) {
+		$verify      = clone $data;
+		$verify->cmd = 'notify-validate';
+		$response    = $this->verifyPayload( $verify, $is_subscription );
+
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return false;
+		}
+
+		$body    = trim( (string) wp_remote_retrieve_body( $response ) );
+		$decoded = json_decode( $body );
+		if ( is_string( $decoded ) ) {
+			$body = $decoded;
+		}
+
+		return 'VERIFIED' === $body;
+	}
+
+	/**
+	 * Apply a verified one-time payment notification to its WooCommerce order.
+	 */
+	private function handle_verified_order_ipn( $data, $status, $logger ) {
+		$order_id = isset( $data->order_id ) ? absint( $data->order_id ) : 0;
+		$order    = $order_id ? wc_get_order( $order_id ) : false;
+
+		if ( ! $order || $order->get_payment_method() !== $this->id ) {
+			$this->ipn_reply( 404, 'unknown order' );
+		}
+
+		$transaction_id = isset( $data->transaction_id ) ? sanitize_text_field( (string) $data->transaction_id ) : '';
+
+		if ( 'failed' === $status ) {
+			if ( $order->has_status( array( 'pending', 'on-hold' ) ) ) {
+				$order->update_status( 'failed', __( 'BananaCrystal reported the payment as failed.', 'wo-banana-crystal' ) );
+			}
+			$this->ipn_reply( 200, 'ok' );
+		}
+
+		// Already paid: acknowledge without touching the order again.
+		if ( $order->is_paid() ) {
+			$this->ipn_reply( 200, 'ok' );
+		}
+
+		// The pay link carries amount and order_id in the URL, so a buyer can pay less
+		// for an order. The verified transfer must cover the order in the order's currency.
+		$paid_currency = isset( $data->currency ) ? strtoupper( sanitize_text_field( (string) $data->currency ) ) : '';
+		$paid_amount   = isset( $data->gross_amount ) ? (float) $data->gross_amount : ( isset( $data->amount ) ? (float) $data->amount : 0.0 );
+		$order_total   = (float) $order->get_total();
+
+		if ( strtoupper( $order->get_currency() ) !== $paid_currency || $paid_amount + 0.01 < $order_total ) {
+			$order->update_status(
+				'on-hold',
+				sprintf(
+					/* translators: 1: amount paid, 2: currency paid, 3: transaction id */
+					__( 'BananaCrystal payment did not match the order (paid %1$s %2$s, transaction %3$s). Review before fulfilling.', 'wo-banana-crystal' ),
+					wc_format_decimal( $paid_amount ),
+					$paid_currency,
+					$transaction_id
+				)
+			);
+			$logger->warning( 'IPN amount/currency mismatch for order ' . $order_id, array( 'source' => 'banana-crystal' ) );
+			$this->ipn_reply( 200, 'held for review' );
+		}
+
+		$order->payment_complete( $transaction_id );
+		$order->add_order_note( sprintf( __( 'BananaCrystal payment verified (transaction %s).', 'wo-banana-crystal' ), $transaction_id ) );
+		apply_filters( 'wo_banana_crystal_payment_success', array( 'order' => $order ) );
+
+		$this->ipn_reply( 200, 'ok' );
+	}
+
+	/**
+	 * Create a subscription from a verified subscription payment notification.
+	 */
+	private function handle_verified_subscription_ipn( $data, $status, $logger ) {
+		global $wpdb;
+
+		if ( 'completed' !== $status ) {
+			$this->ipn_reply( 200, 'ok' );
+		}
+
+		$plan = get_banana_crystal_subscription_plan( absint( $data->subscription_plan_id ) );
+		if ( ! $plan ) {
+			$this->ipn_reply( 404, 'unknown plan' );
+		}
+
+		$paid_amount = isset( $data->amount ) ? (float) $data->amount : 0.0;
+		if ( $paid_amount + 0.01 < (float) $plan->subscription_plan_amount ) {
+			$logger->warning( 'Subscription IPN amount below plan amount for plan ' . $plan->subscription_plan_id, array( 'source' => 'banana-crystal' ) );
+			$this->ipn_reply( 200, 'held for review' );
+		}
+
+		$table   = $wpdb->prefix . 'banana_crystal_subscriptions';
+		$user_id = isset( $data->subscriber_user_id ) ? absint( $data->subscriber_user_id ) : 0;
+
+		$existing = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT subscription_id FROM {$table} WHERE user_id = %d AND subscription_plan_id = %d AND subscription_status = 'ACTIVE' AND deleted_at IS NULL LIMIT 1",
+				$user_id,
+				$plan->subscription_plan_id
+			)
+		);
+		if ( $existing ) {
+			$this->ipn_reply( 200, 'ok' );
+		}
+
+		$wpdb->insert(
+			$table,
+			array(
+				'subscription_plan_id'    => $plan->subscription_plan_id,
+				'user_id'                 => $user_id,
+				'subscription_title'      => $plan->subscription_plan_title,
+				'subscription_occurrence' => $plan->subscription_plan_occurrence,
+				'subscription_amount'     => $plan->subscription_plan_amount,
+				'buyer_user_name'         => isset( $data->payer_username ) ? sanitize_text_field( (string) $data->payer_username ) : '',
+				'payload'                 => wp_json_encode( $data ),
+				'subscription_status'     => 'ACTIVE',
+				'created_at'              => current_time( 'mysql' ),
+				'expired_at'              => get_banana_crystal_expiry_date_by_occurence( $plan->subscription_plan_occurrence ),
+			)
+		);
+
+		$this->ipn_reply( 200, 'ok' );
+	}
+
+	/**
+	 * Send a JSON reply to the IPN caller and stop.
+	 */
+	private function ipn_reply( $code, $message ) {
+		status_header( $code );
+		wp_send_json( array( 'success' => $code < 300, 'message' => $message ), $code );
 	}
 
 
@@ -418,14 +533,16 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
      * @params (array)$data
      * @return (mixed)
      **/
-	private function verifyPayload($data) {
-        $endpoint = 'https://app.bananacrystal.com/store_integrations/wordpress/notifications/verify';
+	private function verifyPayload($data, $is_subscription = false) {
+        $endpoint = $is_subscription
+            ? 'https://app.bananacrystal.com/store_integrations/wordpress/subscriptions/notifications/verify'
+            : 'https://app.bananacrystal.com/store_integrations/wordpress/notifications/verify';
         $postdata = json_encode($data);
 
 		$request = array(
 			'method'      => 'POST',
 			'timeout'     => 45,
-			'redirection' => 5,
+			'redirection' => 0,
 			'httpversion' => '1.0',
 			'blocking'    => true,
 			'headers'     => array(
@@ -480,8 +597,16 @@ class Woocommerce_Banana_Crystal extends WC_Payment_Gateway {
 			}
 			
 			//redirect user to store banana crystal payment page
-			$params = '?amount='.$order->order_total.'&note='.$notes.'&order_id='.$order_id.'&sd='. base64_encode($order_key);
-			echo '<p class="payment-pending-text">Thank you. Your order is pending payment. Please click below to pay for the order <br/> <a href="https://app.bananacrystal.com/payme/'.$store_user_name.$params.'" style="
+			$pay_url = add_query_arg(
+				array(
+					'amount'   => rawurlencode( $order->get_total() ),
+					'note'     => rawurlencode( $notes ),
+					'order_id' => rawurlencode( $order_id ),
+					'sd'       => rawurlencode( base64_encode( $order_key ) ),
+				),
+				'https://app.bananacrystal.com/payme/' . rawurlencode( $store_user_name )
+			);
+			echo '<p class="payment-pending-text">Thank you. Your order is pending payment. Please click below to pay for the order <br/> <a href="'.esc_url( $pay_url ).'" style="
 			display: block;
 			width: 230px;
 		" class="button wp-element-button">Click here to Pay</a></p><br/><br/>';

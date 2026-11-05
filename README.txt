@@ -5,7 +5,7 @@ Tags: payments, bananacrystal, woocommerce, payment gateway
 Requires at least: 6.2
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -158,6 +158,12 @@ If you need help regarding a transaction, visit the [BananaCrystal Support Cente
 
 == Changelog ==
 
+= 1.3.2 =
+* Security: Legacy mode payment notifications (IPN) are now confirmed with BananaCrystal before an order is marked paid. Notifications that BananaCrystal does not confirm are rejected.
+* Security: a confirmed payment must be in the order currency and cover the order total. A payment that does not match puts the order on hold for review.
+* Security: subscription plan lookups now use prepared queries, and creating, editing or deleting a subscription plan checks the user's permission.
+* All stores should update.
+
 = 1.3.1 =
 * AI Agent mode: the gateway settings now show the exact URLs to paste into your BananaCrystal WooCommerce integration (order completion / thank-you, order pay / return, payment notifications).
 * Clearer default payment title and description, with example placeholders in the settings.
@@ -170,3 +176,8 @@ If you need help regarding a transaction, visit the [BananaCrystal Support Cente
 
 = 1.2.6 =
 * Bug fixes and checkout improvements.
+
+== Upgrade Notice ==
+
+= 1.3.2 =
+Security fix: payment notifications are now verified with BananaCrystal before an order is marked paid. All stores should update.
